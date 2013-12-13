@@ -1,0 +1,45 @@
+
+(c) Copyright 2007-2013 by "The SABnzbd-team" <team@sabnzbd.org>
+
+The SABnzbd-team is:
+
+Active team:
+    ShyPike <shypike@sabnzbd.org>
+    inpheaux <inpheaux@sabnzbd.org>
+    zoggy <zoggy@sabnzbd.org>
+Sleeping members
+    sw1tch <switch@sabnzbd.org>
+    pairofdimes <pairofdimes@sabnzbd.org>
+    rAf <rAf@sabnzbd.org>
+Honorary member (and original author)
+    Gregor Kaufmann <tdian@users.sourceforge.net>
+
+The main contributors and moderators of the translations
+    Danish: Rene (nordjyden6)
+    Dutch: ShyPike
+    French : rAf and Fox Ace
+    German: Severin Heiniger
+    Norwegian: Protx
+    Romanian: nicusor
+    Serbian: Ozzii
+    Swedish: Malmis
+    Spanish: Syquus
+    Portuguese (Brazil): lrrosa
+    Russian: Pavel Maryanov
+    Polish: Tomasz 'Zen' Napierala
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+See accompanying files GPL2.txt and GPL3.txt.

@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: SABnzbd
+Version: 0.7.16
+Summary: SABnzbd-0.7.16
+Home-page: http://sabnzbd.org
+Author: The SABnzbd Team
+Author-email: team@sabnzbd.org
+License: GNU General Public License 2 (GPL2 or later)
+Description: Fully automated Usenet Binary Downloader
+Platform: posix
