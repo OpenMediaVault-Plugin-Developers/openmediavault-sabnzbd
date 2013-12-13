@@ -21,7 +21,7 @@ configure)
         echo "sabnzbd user already exists."
     fi
 
-    chown -R sabnzbd:users /opt/sabnzbd
+    chown -R sabnzbd:users /opt/SABnzbd
 
     ;;
 abort-upgrade|abort-remove|abort-deconfigure)
