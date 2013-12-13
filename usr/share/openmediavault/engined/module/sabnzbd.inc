@@ -38,14 +38,13 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract
         if (is_null($object))
             throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED, "//services/sabnzbd");
 
-        $cmd = "/etc/init.d/sabnzbd status";
-        $this->exec($cmd, $output);
+        $initd = new OMVSysVInitScript("minidlna");
 
         return array(
             "name"    => $this->getName(),
             "title"   => gettext("SABnzbd"),
             "enabled" => boolval($object['enable']),
-            "running" => (strpos($output[0], 'is running') > 0)
+            "running" => ($initd->status() == 0)
         );
     }
 
