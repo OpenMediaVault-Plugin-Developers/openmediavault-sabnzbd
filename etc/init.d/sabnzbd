@@ -26,7 +26,7 @@ PYTHONEXEC="/usr/bin/python"
 DAEMON=/opt/SABnzbd/SABnzbd.py
 USER="sabnzbd"
 if [ -f "$CONFIG" ]; then
-	PORT=$(grep -m 1 "^port" '${INSTALLDIR}'/SABnzbd/sabnzbd.ini | awk '${FAKE}')
+	PORT=$(grep -m 1 "^port" /opt/SABnzbd/sabnzbd.ini | awk '${FAKE}')
 else
 	PORT="8080"
 fi
