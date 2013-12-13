@@ -80,7 +80,7 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
                 text    : _("SABnzbd Web Interface"),
                 scope   : this,
                 handler : function() {
-                    var link = 'http://' + location.hostname + ':8081/';
+                    var link = 'http://' + location.hostname + ':8080/';
                     window.open(link, '_blank');
                 }
             },{

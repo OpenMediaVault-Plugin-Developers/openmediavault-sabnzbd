@@ -1,87 +1,119 @@
-#! /bin/sh
+#!/bin/bash
+#
+# Copyright (C) 2008-2010 by JCF Ploemen <linux@jp.pp.ru>
+# released under GPL, version 2 or later
+
+################################################
+#                                              #
+#  TO CONFIGURE EDIT /etc/default/sabnzbdplus  #
+#                                              #
+################################################
 
 ### BEGIN INIT INFO
-# Provides:          sickbeard
+# Provides:          sabnzbdplus
 # Required-Start:    $local_fs $network $remote_fs
 # Required-Stop:     $local_fs $network $remote_fs
-# Should-Start:      $NetworkManager
-# Should-Stop:       $NetworkManager
+# Should-Start:      NetworkManager
+# Should-Stop:       NetworkManager
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: starts instance of Sick Beard
-# Description:       starts instance of Sick Beard using start-stop-daemon
+# Short-Description: SABnzbd+ binary newsgrabber
 ### END INIT INFO
+DESC="SABnzbd+ binary newsgrabber"
+APPPATH=/opt/
+CONFIG="/opt/SABnzbd/sabnzbd.ini"
+PYTHONEXEC="/usr/bin/python"
+DAEMON=/opt/SABnzbd/SABnzbd.py
+USER="sabnzbd"
+if [ -f "$CONFIG" ]; then
+	PORT=$(grep -m 1 "^port" '${INSTALLDIR}'/SABnzbd/sabnzbd.ini | awk '${FAKE}')
+else
+	PORT="8080"
+fi
+#sabnzbd_port.pid
+PIDFILE="/var/run/sabnzbd-$PORT.pid"
+DEFOPTS=" -OO $DAEMON --daemon --pid /var/run/"
+#
+# these are only accepted from the settings file
+#unset USER CONFIG HOST PORT EXTRAOPTS
 
-############### EDIT ME ##################
-# Path to store PID file
-PID_FILE=/var/run/sickbeard/sickbeard.pid
-PID_PATH=/var/run/sickbeard
-
-# script name
-NAME=sickbeard
-
-# startup args
-DAEMON_OPTS=" SickBeard.py -q --daemon --pidfile=${PID_FILE}"
-
-PIDFILE=/var/run/sickbeard.pid
-SETTINGS_LOADED=FALSE
-RUN_AS=sickbeard
-DAEMON=/usr/bin/python
-APP_PATH=/opt/sickbeard
-############### END EDIT ME ##################
-
-test -x $DAEMON || exit 0
-
-# Load the VERBOSE setting and other rcS variables
-. /lib/init/vars.sh
-
-# Define LSB log_* functions.
-# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
 . /lib/lsb/init-functions
 
-set -e
-
-if [ ! -d $PID_PATH ]; then
-    mkdir -p $PID_PATH
+is_running()
+{
+# returns 0 when running, 1 otherwise
+if [ -f $PIDFILE ]; then
+	PID=`cat $PIDFILE`
+	return 0
 fi
+return 1
+}
 
-chown -R $RUN_AS:users $PID_PATH
+load_settings()
+{
+HOST="0.0.0.0" #Set SABnzbd address here.
+EXTRAOPTS=""
+OPTIONS="$DEFOPTS"
+[ -n "$CONFIG" ] && OPTIONS="$OPTIONS --config-file $CONFIG"
+[ -n "$HOST" ] && SERVER="$HOST" || SERVER=
+[ -n "$PORT" ] && SERVER="$SERVER:$PORT"
+[ -n "$SERVER" ] && OPTIONS="$OPTIONS --server $SERVER"
+[ -n "$EXTRAOPTS" ] && OPTIONS="$OPTIONS $EXTRAOPTS"
+}
 
-if [ -e $PID_FILE ]; then
-    PID=`cat $PID_FILE`
-    if ! kill -0 $PID > /dev/null 2>&1; then
-        echo "Removing stale $PID_FILE"
-        rm $PID_FILE
-    fi
+start_sab()
+{
+load_settings;
+if ! is_running; then
+	log_daemon_msg "Starting $DESC"
+	start-stop-daemon --quiet --pidfile $PIDFILE --chuid $USER --start --exec $PYTHONEXEC -- $OPTIONS
+else
+	log_success_msg "$DESC: already running (pid $PID)"
 fi
+}
+
+stop_sab()
+{
+load_settings;
+if is_running; then
+	TMPFILE=$(mktemp /tmp/sabnzbdplus.XXXXXXXXXX || exit 1)
+	trap "[ -f $TMPFILE ] && rm -f $TMPFILE" EXIT
+	echo "$PID" > $TMPFILE
+	log_daemon_msg "Stopping $DESC"
+	start-stop-daemon --stop --user $USER --pidfile $TMPFILE --retry 30
+else
+	log_success_msg "$DESC: not running"
+fi
+[ -f $PIDFILE ] && rm -f $PIDFILE
+}
 
 case "$1" in
-    start)
-        echo "Starting $DESC"
-        cd $APP_PATH
-        #/usr/bin/git stash
-        start-stop-daemon -d $APP_PATH -c $RUN_AS --start --pidfile $PID_FILE --exec $DAEMON -- $DAEMON_OPTS
+        start)
+                start_sab
         ;;
-
-    stop)
-        echo "Stopping $DESC"
-        start-stop-daemon --stop --pidfile $PID_FILE --retry 15
+        stop)
+                stop_sab
         ;;
-
-    restart|force-reload)
-        echo "Restarting $DESC"
-        start-stop-daemon --stop --pidfile $PID_FILE --retry 15
-        start-stop-daemon -d $APP_PATH -c $RUN_AS --start --pidfile $PID_FILE --exec $DAEMON -- $DAEMON_OPTS
+        force-reload|restart)
+                stop_sab
+                start_sab
         ;;
-
-    status)
-        status_of_proc -p $PID_FILE "$DAEMON" "$NAME"
+        update)
+                stop_sab
+                up_sab
+                start_sab
         ;;
-
-    *)
-        N=/etc/init.d/$NAME
-        echo "Usage: $N {start|stop|restart|status|force-reload}" >&2
-        exit 1
+        status)
+                if is_running; then
+                log_success_msg "$DESC: running (pid $PID)"
+					else
+                log_success_msg "$DESC: not running"
+                [ -f $PIDFILE ] && exit 1 || exit 3
+                fi
+        ;;
+        *)
+                log_failure_msg "Usage: $0 {start|stop|restart|force-reload|update|status}"
+                exit 3
         ;;
 esac
 

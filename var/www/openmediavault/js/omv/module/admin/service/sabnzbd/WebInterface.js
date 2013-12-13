@@ -23,7 +23,7 @@ Ext.define("OMV.module.admin.service.sabnzbd.WebInterface", {
 
     initComponent : function() {
         var me = this;
-        var link = 'http://' + location.hostname + ':8081/';
+        var link = 'http://' + location.hostname + ':8080/';
 
         me.html = "<iframe src='" + link + "' width='100%' height='100%' />";
         me.callParent(arguments);
