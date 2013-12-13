@@ -8,6 +8,7 @@ Standards-Version: 3.9.3
 Package: openmediavault-sabnzbd
 Architecture: all
 Depends: ${misc:Depends}, openmediavault (>= 0.5), openmediavault (<< 0.6),
-  python, python-cheetah, git
+ python, python-cheetah, python-configobj, python-feedparser,
+ par2, python-openssl, python-yenc, unzip, python-support, git
 Description: OpenMediaVault SABnzbd plugin
  SABnzbd is an Open Source Binary Newsreader written in Python.

@@ -1,4 +1,40 @@
 #!/bin/sh
+#
+set -e
+
+. /etc/default/openmediavault
+. /usr/share/openmediavault/scripts/helper-functions
+
+case "$1" in
+        purge)
+                # Remove the configuration data.
+                #/etc/init.d/couchpotato stop &>/dev/null
+
+                rm -Rf /opt/SABnzbd/* &>/dev/null
+
+                if [ -f "/var/run/sabnzbd/sabnzbd-8080.pid" ]; then
+                        PID=$(cat /var/run/sabnzbd/sabnzbd-8080.pid);
+                        kill -0 $PID 2>/dev/null;
+                        if [ $? -eq 0 ]; then
+                                kill -9 $PID;
+                                rm -Rf /var/run/sabnzbd
+                        fi
+                fi
+                omv_config_delete "//services/sabnzbd"
+                userdel sabnzbd
+        ;;
+
+        remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+        ;;
+
+        *)
+                echo "postrm called with unknown argument '$1'" >&2
+                exit 1
+        ;;
+esac
+
+exit 0
+#!/bin/sh
 
 set -e
 

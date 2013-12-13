@@ -32,52 +32,53 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract
 
     public function getStatus() {
         global $xmlConfig;
-
-        $object = $xmlConfig->get("//services/sabnzbd");
-
+        $xpath  = "//services/sabnzbd";
+        $object = $xmlConfig->get($xpath);
         if (is_null($object))
-            throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED, "//services/sabnzbd");
+                        throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED, $xpath);
 
-        $initd = new OMVSysVInitScript("minidlna");
-
+	$cmd = "/etc/init.d/sabnzbd status";
+        $this->exec($cmd, $output);
         return array(
             "name"    => $this->getName(),
             "title"   => gettext("SABnzbd"),
             "enabled" => boolval($object['enable']),
-            "running" => ($initd->status() == 0)
+            "running" => (strpos($output[0], 'is running') > 0)
         );
     }
 
     public function startService() {
         global $xmlConfig;
-
-        $object = $xmlConfig->get("//services/sabnzbd");
-
+        $xpath  = "//services/sabnzbd";
+        $object = $xmlConfig->get($xpath);
         if (is_null($object))
-            throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED, "//services/sabnzbd");
+                        throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED, $xpath);
 
-        if (boolval($object['enable']) === false)
+        if(FALSE === boolval($object['enable']))
             return;
 
-        $cmd = "sudo /etc/init.d/sabnzbd start 2>&1";
-        if(0 !== $this->exec($cmd, $output))
-            throw new OMVException(OMVErrorMsg::E_EXEC_FAILED, $cmd, implode("\n", $output));
+                $cmd = "/etc/init.d/sabnzbd status";
+                $this->exec($cmd, $output);
+                if (strpos($output[0], 'failed!') > 0);
+                        $cmd = "/etc/init.d/sabnzbd start 2>&1";
+                        $this->exec($cmd, $output);
     }
 
     public function stopService() {
         global $xmlConfig;
-
-        $object = $xmlConfig->get("//services/sabnzbd");
-
+        $xpath  = "//services/sabnzbd";
+        $object = $xmlConfig->get($xpath);
         if (is_null($object))
-            throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED, "//services/sabnzbd");
+                        throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED, $xpath);
 
-        if (boolval($object['enable']) === true)
+        if(TRUE === boolval($object['enable']))
             return;
 
-        $cmd = "sudo /etc/init.d/sabnzbd stop 2>&1";
-        if(0 !== $this->exec($cmd, $output))
-            throw new OMVException(OMVErrorMsg::E_EXEC_FAILED, $cmd, implode("\n", $output));
+                $cmd = "/etc/init.d/sabnzbd status";
+                $this->exec($cmd, $output);
+                if (strpos($output[0], 'is running') > 0);
+                        $cmd = "/etc/init.d/sabnzbd stop 2>&1";
+                        $this->exec($cmd, $output);
     }
 
     public function bindListeners(OMVNotifyDispatcher $dispatcher) {

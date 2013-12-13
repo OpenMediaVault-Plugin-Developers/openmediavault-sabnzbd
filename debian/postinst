@@ -22,6 +22,22 @@ configure)
     fi
 
     chown -R sabnzbd:users /opt/SABnzbd
+    chown -R sabnzbd:users /etc/init.d/sabnzbd
+
+    if [ ! -e /var/lib/dpkg/info/unrar.list ]; then
+    	RUNNING=`expr "$(uname -m)"`
+	if [ "$RUNNING" == "x86_64" ]; then
+		cd /tmp
+		wget http://http.us.debian.org/debian/pool/non-free/u/unrar-nonfree/unrar_4.1.4-1_amd64.deb > /dev/null 2>&1
+		dpkg -i unrar_4.1.4-1_amd64.deb > /dev/null 2>&1
+		rm unrar_4.1.4-1_amd64.deb > /dev/null 2>&1
+	elif [ "$RUNNING" == "i686" ]; then
+		cd /tmp
+		wget http://http.us.debian.org/debian/pool/non-free/u/unrar-nonfree/unrar_4.1.4-1_i386.deb > /dev/null 2>&1
+		dpkg -i unrar_4.1.4-1_i386.deb > /dev/null 2>&1
+		rm unrar_4.1.4-1_i386.deb > /dev/null 2>&1
+	fi
+    fi
 
     ;;
 abort-upgrade|abort-remove|abort-deconfigure)
