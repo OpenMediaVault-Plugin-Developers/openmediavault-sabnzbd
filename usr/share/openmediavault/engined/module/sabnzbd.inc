@@ -60,7 +60,7 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract
                 $cmd = "/etc/init.d/sabnzbd status";
                 $this->exec($cmd, $output);
                 if (strpos($output[0], 'failed!') > 0);
-                        $cmd = "/etc/init.d/sabnzbd start 2>&1";
+                        $cmd = "update-rc.d sabnzbd enable && service sabnzbd start 2>&1";
                         $this->exec($cmd, $output);
     }
 
@@ -77,7 +77,7 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract
                 $cmd = "/etc/init.d/sabnzbd status";
                 $this->exec($cmd, $output);
                 if (strpos($output[0], 'is running') > 0);
-                        $cmd = "/etc/init.d/sabnzbd stop 2>&1";
+                        $cmd = "service sabnzbd stop && update-rc.d sabnzbd disable 2>&1";
                         $this->exec($cmd, $output);
     }
 
