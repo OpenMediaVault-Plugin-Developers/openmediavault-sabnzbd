@@ -1,3 +1,9 @@
+openmediavault-sabnzbd (0.5.2) stable; urgency=low
+
+  * Make service start at boot - try #2
+
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Tue, 17 Dec 2013 11:07:27 -0500
+
 openmediavault-sabnzbd (0.5.1) stable; urgency=low
 
   * Make service start at boot
