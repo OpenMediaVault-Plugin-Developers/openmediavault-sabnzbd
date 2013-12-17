@@ -29,16 +29,16 @@ PID_PATH=/var/run/sabnzbd
 NAME=sabnzbd
 DESC=SABnzbd
 # startup args
-DAEMON_OPTS="SABnzbd.py"
-EXTRA_OPTS="--daemon --pid ${PID_PATH}"
+DAEMON_OPTS="--daemon --pid ${PID_PATH}"
+EXTRA_OPTS=""
 RUN_AS=sabnzbd
-DAEMON=/usr/bin/python
+DAEMON=SABnzbd.py
 APP_PATH=/opt/SABnzbd
 CONFIG="/opt/SABnzbd/sabnzbd.ini"
 PORT="8080"
 ############### END EDIT ME ##################
 
-test -x $DAEMON || exit 0
+test -x $APP_PATH/$DAEMON || exit 0
 
 # Load the VERBOSE setting and other rcS variables
 . /lib/init/vars.sh
