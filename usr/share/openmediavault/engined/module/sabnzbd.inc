@@ -57,11 +57,8 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract
         if(FALSE === boolval($object['enable']))
             return;
 
-                $cmd = "/etc/init.d/sabnzbd status";
-                $this->exec($cmd, $output);
-                if (strpos($output[0], 'failed!') > 0);
-                        $cmd = "update-rc.d sabnzbd defaults && service sabnzbd start 2>&1";
-                        $this->exec($cmd, $output);
+                $initd = new OMVSysVInitScript("sabnzbd", TRUE);
+                $initd->exec();
     }
 
     public function stopService() {
@@ -74,11 +71,8 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract
         if(TRUE === boolval($object['enable']))
             return;
 
-                $cmd = "/etc/init.d/sabnzbd status";
-                $this->exec($cmd, $output);
-                if (strpos($output[0], 'is running') > 0);
-                        $cmd = "service sabnzbd stop && update-rc.d sabnzbd disable 2>&1";
-                        $this->exec($cmd, $output);
+                $initd = new OMVSysVInitScript("sabnzbd", FALSE);
+                $initd->exec();
     }
 
     public function bindListeners(OMVNotifyDispatcher $dispatcher) {
