@@ -1,4 +1,3 @@
 usr/share/openmediavault/*  usr/share/openmediavault
 var/www/openmediavault/*    var/www/openmediavault
-opt/SABnzbd/*               opt/SABnzbd
 etc/init.d/*                etc/init.d

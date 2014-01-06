@@ -7,11 +7,6 @@ set -e
 
 case "$1" in
         purge)
-                # Remove the configuration data.
-                #/etc/init.d/couchpotato stop &>/dev/null
-
-                rm -Rf /opt/SABnzbd/* &>/dev/null
-
                 if [ -f "/var/run/sabnzbd/sabnzbd-8080.pid" ]; then
                         PID=$(cat /var/run/sabnzbd/sabnzbd-8080.pid);
                         kill -0 $PID 2>/dev/null;
@@ -20,6 +15,7 @@ case "$1" in
                                 rm -Rf /var/run/sabnzbd
                         fi
                 fi
+                rm -Rf /opt/SABnzbd/* &>/dev/null
                 omv_config_delete "//services/sabnzbd"
                 userdel sabnzbd
         ;;

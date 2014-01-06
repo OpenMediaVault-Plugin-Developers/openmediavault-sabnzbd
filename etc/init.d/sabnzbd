@@ -34,7 +34,7 @@ EXTRA_OPTS=""
 RUN_AS=sabnzbd
 DAEMON=SABnzbd.py
 APP_PATH=/opt/SABnzbd
-CONFIG="/opt/SABnzbd/sabnzbd.ini"
+CONFIG="/home/sabnzbd/.sabnzbd/sabnzbd.ini"
 PORT="8080"
 ############### END EDIT ME ##################
 
@@ -51,9 +51,13 @@ set -e
 
 if [ ! -d $PID_PATH ]; then
     mkdir -p $PID_PATH
+	chown -R $RUN_AS:users $PID_PATH
 fi
 
-chown -R $RUN_AS:users $PID_PATH
+if [ ! -d /home/sabnzbd/.sabnzbd ]; then
+    mkdir -p /home/sabnzbd/.sabnzbd
+	chown -R $RUN_AS:users /home/sabnzbd/.sabnzbd
+fi
 
 if [ -e $PID_FILE ]; then
     PID=`cat $PID_FILE`

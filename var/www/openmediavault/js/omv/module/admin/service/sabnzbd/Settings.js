@@ -25,7 +25,8 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
     extend : "OMV.workspace.form.Panel",
     uses   : [
         "OMV.data.Model",
-        "OMV.data.Store"
+        "OMV.data.Store",
+        "OMV.module.admin.service.sabnzbd.UpdateSAB"
     ],
 
     initComponent : function () {
@@ -82,6 +83,42 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
                 handler : function() {
                     var link = 'http://' + location.hostname + ':8080/';
                     window.open(link, '_blank');
+                }
+            },{
+                xtype   : "button",
+                name    : "UpdateSAB",
+                text    : _("Update SABnzbd"),
+                scope   : this,
+                handler : function() {
+                    var me = this;
+                    OMV.MessageBox.show({
+                        title   : _("Confirmation"),
+                        msg     : _("Are you sure you want to update SABnzbd?"),
+                        buttons : Ext.Msg.YESNO,
+                        fn      : function(answer) {
+                            if (answer !== "yes")
+                               return;
+
+                            OMV.MessageBox.wait(null, _("Updating SABnzbd"));
+                            OMV.Rpc.request({
+                                scope   : me,
+                                rpcData : {
+                                    service : "SABnzbd",
+                                    method  : "doUpdateSAB",
+                                    params  : {
+                                        local_ver   : me.getForm().findField("local_ver").getValue(),
+                                        online_ver   : me.getForm().findField("online_ver").getValue()
+                                    }
+                                },
+                                success : function(id, success, response) {
+                                    me.doReload();
+                                    OMV.MessageBox.hide();
+                                }
+                            });
+                        },
+                        scope : me,
+                        icon  : Ext.Msg.QUESTION
+                    });
                 }
             },{
                 border: false,
