@@ -29,6 +29,28 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
         "OMV.module.admin.service.sabnzbd.UpdateSAB"
     ],
 
+    rpcService   : "Sabnzbd",
+    rpcGetMethod : "getSettings",
+    rpcSetMethod : "setSettings",
+
+    plugins      : [{
+        ptype        : "linkedfields",
+        correlations : [{
+            name       : [
+                "updatesab",
+            ],
+            conditions : [
+                { name  : "update", value : false }
+            ],
+            properties : "!show"
+        },{
+            name       : [
+                "update",
+            ],
+            properties : "!show"
+        }]
+    }],
+
     initComponent : function () {
         var me = this;
 
@@ -50,10 +72,6 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
 
         me.callParent(arguments);
     },
-
-    rpcService   : "Sabnzbd",
-    rpcGetMethod : "getSettings",
-    rpcSetMethod : "setSettings",
 
     getFormItems : function() {
         var me = this;
@@ -85,8 +103,11 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
                     window.open(link, '_blank');
                 }
             },{
+                xtype   : "checkbox",
+                name    : "update"
+            },{
                 xtype   : "button",
-                name    : "UpdateSAB",
+                name    : "updatesab",
                 text    : _("Update SABnzbd"),
                 scope   : this,
                 handler : function() {
@@ -98,16 +119,15 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
                         fn      : function(answer) {
                             if (answer !== "yes")
                                return;
+                            // throw new OMVException(OMVErrorMsg::E_MISC_FAILURE, "You CAN NOT use this branch with this repository.");
 
-                            OMV.MessageBox.wait(null, _("Updating SABnzbd"));
                             OMV.Rpc.request({
                                 scope   : me,
                                 rpcData : {
-                                    service : "SABnzbd",
+                                    service : "Sabnzbd",
                                     method  : "doUpdateSAB",
                                     params  : {
-                                        local_ver   : me.getForm().findField("local_ver").getValue(),
-                                        online_ver   : me.getForm().findField("online_ver").getValue()
+                                        update   : 0
                                     }
                                 },
                                 success : function(id, success, response) {

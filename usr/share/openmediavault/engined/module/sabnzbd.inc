@@ -37,7 +37,7 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract
         if (is_null($object))
                         throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED, $xpath);
 
-	$cmd = "/etc/init.d/sabnzbd status";
+        $cmd = "/etc/init.d/sabnzbd status";
         $this->exec($cmd, $output);
         return array(
             "name"    => $this->getName(),

@@ -1,6 +1,5 @@
 #!/bin/sh
-#test=`wget http://sabnzbd.org/download/ -O - | \grep sourceforge\.net | grep Linux | \sed 's/.*href=\"\(.*\)\".*/\1/' | sed 's/.*-\(.*\)-.*/\1/'`
-#test=`wget http://localhost:8080/sabnzbd/api?mode=version -O -`
+
 set -e
 
 . /etc/default/openmediavault
@@ -30,7 +29,7 @@ configure)
 	insserv -d sabnzbd
 	STABLE=`wget -q http://sabnzbd.org/download/ -O - | \grep sourceforge\.net | grep Linux | \sed 's/.*href=\"\(.*\)\".*/\1/' | sed 's/.*-\(.*\)-.*/\1/'`
     	
-	if [ ! -d $INSTALLDIR/SABnzbd ]; then        
+	if [ ! -d /opt/SABnzbd ]; then        
         wget -q -nv http://downloads.sourceforge.net/project/sabnzbdplus/sabnzbdplus/${STABLE}/SABnzbd-${STABLE}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
 		tar xzf /tmp/sabnzbdplus.tar.gz -C /tmp/
 		cp -fRa /tmp/SABnzbd-${STABLE}/. /opt/SABnzbd/
@@ -42,8 +41,7 @@ configure)
         echo "Initial configuration."
         object="<enable>0</enable>"
         object="${object}<showtab>0</showtab>"
-        object="${object}<local_ver>${STABLE}</local_ver>"
-        object="${object}<online_ver>${STABLE}</online_ver>"
+        object="${object}<update>0</update>"
         omv_config_add_element "/config/services" "sabnzbd" "${object}" true
     fi
 

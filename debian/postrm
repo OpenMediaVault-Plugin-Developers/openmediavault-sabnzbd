@@ -7,6 +7,8 @@ set -e
 
 case "$1" in
         purge)
+                rm -Rf /opt/SABnzbd & >/dev/null
+				
                 if [ -f "/var/run/sabnzbd/sabnzbd-8080.pid" ]; then
                         PID=$(cat /var/run/sabnzbd/sabnzbd-8080.pid);
                         kill -0 $PID 2>/dev/null;
@@ -15,39 +17,22 @@ case "$1" in
                                 rm -Rf /var/run/sabnzbd
                         fi
                 fi
-                rm -Rf /opt/SABnzbd/* &>/dev/null
+                
                 omv_config_delete "//services/sabnzbd"
-                userdel sabnzbd
+                userdel -r sabnzbd
+                if [ ! -d /opt ]; then
+                    mkdir /opt
+                    chmod 775 /opt
+                fi
         ;;
 
         remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
         ;;
 
         *)
-                echo "postrm called with unknown argument '$1'" >&2
-                exit 1
-        ;;
-esac
-
-exit 0
-#!/bin/sh
-
-set -e
-
-. /etc/default/openmediavault
-. /usr/share/openmediavault/scripts/helper-functions
-
-case "$1" in
-    purge)
-        omv_config_delete "//services/sabnzbd"
-    ;;
-
-    remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
-    ;;
-    *)
-        echo "postrm called with unknown argument \`$1'" >&2
+        echo "postrm called with unknown argument '$1'" >&2
         exit 1
-    ;;
+        ;;
 esac
 
 exit 0
