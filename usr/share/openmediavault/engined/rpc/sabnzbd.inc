@@ -243,7 +243,7 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract {
 
             $path = $xmlConfig->get("//services/sabnzbd/path");
 
-            $cmd = sprintf("tar -zcvf %s /home/sabnzbd/.sabnzbd 2>&1", $path);
+            $cmd = sprintf("tar --exclude='/home/sabnzbd/.sabnzbd/Downloads'  -zcvf %s /home/sabnzbd/.sabnzbd 2>&1", $path);
             $this->exec($cmd, $output, $bgOutputFilename);
             $this->finalizeBgProcStatus($bgStatusFilename, $output);
             exit(0);
