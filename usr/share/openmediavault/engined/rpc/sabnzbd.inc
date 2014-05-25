@@ -46,17 +46,6 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract {
         return $path;
     }
 
-    private function getXPathForks() {
-        $path = sprintf("%s/forks", $this->getXPath());
-        return $path;
-    }
-
-
-    private function getXPathFork() {
-        $path = sprintf("%s/fork", $this->getXPathForks());
-        return $path;
-    }
-
     public function startService() {
         global $xmlConfig;
 
@@ -81,7 +70,7 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract {
     public function initialize() {
         $this->registerMethod("getSettings");
         $this->registerMethod("setSettings");
-        $this->registerMethod("enumerateRepos");
+        $this->registerMethod('doUpdateSAB');
 
         $this->registerMethod('doBackup');
         $this->registerMethod('doRestore');
@@ -89,6 +78,7 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract {
     }
 
     function getSettings($params, $context) {
+        $this->exec("omv-mkconf sabnzbd getsettings");
         global $xmlConfig;
 
         $this->validateMethodContext($context, array( "role" => OMV_ROLE_ADMINISTRATOR ));
@@ -102,24 +92,31 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract {
             $cmd = "grep -m1 enable_https /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3 2>&1";
             $this->exec($cmd, $output);
             if ($output == "1") {
-                $cmd = "grep -m2 port /home/sabnzbd/.sabnzbd/sabnzbd.ini | tail -n1 | cut -d ' ' -f 3 2>&1";
+                $cmd = "grep -m1 port /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3 2>&1";
                 $this->exec($cmd, $output);
                 if ($output == "")
                     $output = "9090";
             } else {
-                $cmd = "grep -m1 port /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3 2>&1";
+                $cmd = "grep -m2 port /home/sabnzbd/.sabnzbd/sabnzbd.ini | tail -n1 | cut -d ' ' -f 3 2>&1";
                 $this->exec($cmd, $output);
                 if ($output == "")
                     $output = "8080";
-        } else {
+            }
+
+        }
+        if (! file_exists("/home/sabnzbd/.sabnzbd/sabnzbd.ini")) {
             $output = "8080";
         }
+
+            
+        
 
         $cmd = "sed -i 's/:[[:digit:]]\{4\}/:" . $output[0] . "/g' /var/www/openmediavault/js/omv/module/admin/service/sabnzbd/WebInterface.js";
         $this->exec($cmd);
 
         $object["enable"]  = boolval($object["enable"]);
         $object["showtab"] = boolval($object["showtab"]);
+        $object["update"]  = boolval($object["update"]);
         $object["port"]    = $output[0];
 
         return $object;
@@ -135,7 +132,7 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract {
             "properties" : {
                 "enable"    : { "type" : "boolean" },
                 "showtab"   : { "type" : "boolean" },
-                "update"    : { "type" : "boolean" }
+                "update"    : { "type" : "boolean" },
                 "port"      : { "type" : "integer" },
                 "mntentref" : { ' . $GLOBALS['OMV_JSONSCHEMA_UUID_NONE'] . ' },
                 "path"      : { "type" : "string", "optional" : true }

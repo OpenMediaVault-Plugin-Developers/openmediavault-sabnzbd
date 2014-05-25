@@ -27,7 +27,7 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract
     implements OMVINotifyListener, OMVIModuleServiceStatus {
 
     public function getName() {
-        return "SABnzbd";
+        return "Sabnzbd";
     }
 
     private function getPluginName() {
@@ -45,12 +45,12 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract
         return $path;
     }
 
-    public function applyConfig() {
-        $cmd = sprintf("omv-mkconf %s 2>&1", $this->getPluginName());
+    //public function applyConfig() {
+    //    $cmd = sprintf("omv-mkconf %s 2>&1", $this->getPluginName());
 
-        if (0 !== $this->exec($cmd, $output))
-            throw new OMVException(OMVErrorMsg::E_EXEC_FAILED, $cmd, implode("\n", $output));
-    }
+    //    if (0 !== $this->exec($cmd, $output))
+    //        throw new OMVException(OMVErrorMsg::E_EXEC_FAILED, $cmd, implode("\n", $output));
+    //}
 
     public function getStatus() {
         global $xmlConfig;
@@ -61,7 +61,7 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract
             throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
                 $this->getXPath());
 
-        $initd = new OMVSysVInitScript($this->getName());
+        $initd = new OMVSysVInitScript($this->getPluginName());
 
         return array(
             "name"    => $this->getPluginName(),

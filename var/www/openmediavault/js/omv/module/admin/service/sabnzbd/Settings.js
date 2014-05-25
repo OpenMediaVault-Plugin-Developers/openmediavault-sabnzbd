@@ -99,6 +99,16 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
                 boxLabel   : _("Show tab containing SABnzbd web interface frame."),
                 checked    : false
             },{
+                xtype: "numberfield",
+                name: "port",
+                fieldLabel: _("Port"),
+                vtype: "port",
+                minValue: 1,
+                maxValue: 65535,
+                allowDecimals: false,
+                allowBlank: false,
+                value: 8080
+            },{
                 xtype   : "button",
                 name    : "opensabnzbd",
                 text    : _("SABnzbd Web Interface"),
@@ -252,7 +262,7 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
                 }
             }
         }).show();
-    },
+    }
 });
 
 OMV.WorkspaceManager.registerPanel({

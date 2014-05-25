@@ -18,7 +18,7 @@
 # along with this file. If not, see <http://www.gnu.org/licenses/>.
 
 set -e
-
+CONFIG="/home/sabnzbd/.sabnzbd/sabnzbd.ini"
 . /etc/default/openmediavault
 . /usr/share/openmediavault/scripts/helper-functions
 
@@ -46,6 +46,19 @@ if [ "$ver1" == "$ver2" ]; then
 else
     xmlstarlet ed -L -u "//services/sabnzbd/update" -v 1 -n ${OMV_CONFIG_FILE}
 fi
+
+if [ -f $CONFIG ]; then
+	HOST=`grep -m 1 host $CONFIG | cut -d ' ' -f 3`
+    if [ `grep -m 1 enable_https $CONFIG | cut -d ' ' -f 3` == "1" ]; then
+		PORT=`grep -m1 https_port $CONFIG | cut -d ' ' -f 3`
+	else
+		PORT=`grep -m2 port $CONFIG | tail -n1 | cut -d ' ' -f 3`
+	fi
+else
+	PORT="8080"
+fi
+
+xmlstarlet ed -L -u "//services/sabnzbd/port" -v $PORT -n ${OMV_CONFIG_FILE}
 }
 
 case "$2" in
