@@ -29,28 +29,6 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
         "OMV.module.admin.service.sabnzbd.UpdateSAB"
     ],
 
-    rpcService   : "Sabnzbd",
-    rpcGetMethod : "getSettings",
-    rpcSetMethod : "setSettings",
-
-    plugins      : [{
-        ptype        : "linkedfields",
-        correlations : [{
-            name       : [
-                "updatesab",
-            ],
-            conditions : [
-                { name  : "update", value : false }
-            ],
-            properties : "!show"
-        },{
-            name       : [
-                "update",
-            ],
-            properties : "!show"
-        }]
-    }],
-
     initComponent : function () {
         var me = this;
 
@@ -72,6 +50,33 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
 
         me.callParent(arguments);
     },
+
+    rpcService   : "Sabnzbd",
+    rpcGetMethod : "getSettings",
+    rpcSetMethod : "setSettings",
+
+    plugins      : [{
+        ptype        : "linkedfields",
+        correlations : [{
+            name       : [
+                "updatesab",
+            ],
+            conditions : [
+                { name  : "update", value : false }
+            ],
+            properties : "!show"
+        },{
+            name       : [
+                "update",
+            ],
+            properties : "!show"
+        },{
+            name       : [
+                "port",
+            ],
+            properties : "!show"
+        }]
+    }],
 
     getFormItems : function() {
         var me = this;
@@ -99,9 +104,12 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
                 text    : _("SABnzbd Web Interface"),
                 scope   : this,
                 handler : function() {
-                    var link = 'http://' + location.hostname + ':8080/';
-                    window.open(link, '_blank');
-                }
+                    var me = this;
+                    var port = me.getForm().findField("port").getValue();
+                    var link = "http://" + location.hostname + ":" + port + "/";
+                    window.open(link, "_blank");
+                },
+                margin : "0 0 5 0"
             },{
                 xtype   : "checkbox",
                 name    : "update"
@@ -144,8 +152,107 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
                 border: false,
                 html: "<br />"
             }]
+                },{
+                        xtype: "fieldset",
+                        title: _("Backup User Settings"),
+                        fieldDefaults: {
+                                labelSeparator: ""
+                        },
+                        items : [{
+                xtype         : "combo",
+                name          : "mntentref",
+                fieldLabel    : _("Volume"),
+                emptyText     : _("Select a volume ..."),
+                allowBlank    : false,
+                allowNone     : false,
+                editable      : false,
+                triggerAction : "all",
+                displayField  : "description",
+                valueField    : "uuid",
+                store         : Ext.create("OMV.data.Store", {
+                    autoLoad : true,
+                    model    : OMV.data.Model.createImplicit({
+                        idProperty : "uuid",
+                        fields     : [
+                            { name : "uuid", type : "string" },
+                            { name : "devicefile", type : "string" },
+                            { name : "description", type : "string" }
+                        ]
+                    }),
+                    proxy : {
+                        type : "rpc",
+                        rpcData : {
+                            service : "Sabnzbd",
+                            method  : "getCandidates"
+                        },
+                        appendSortParams : false
+                    },
+                    sorters : [{
+                        direction : "ASC",
+                        property  : "devicefile"
+                    }]
+                })
+            },{
+                xtype      : "textfield",
+                name       : "path",
+                fieldLabel : _("Path"),
+                allowNone  : true,
+                readOnly   : true
+            },{
+                xtype   : "button",
+                name    : "backup",
+                text    : _("Backup"),
+                scope   : this,
+                handler : Ext.Function.bind(me.onBackupButton, me, [ me ]),
+                margin  : "5 0 0 0"
+            },{
+                border : false,
+                html   : "<ul><li>" + _("Backup settings to a data drive.") + "</li></ul>"
+            },{
+                xtype   : "button",
+                name    : "restore",
+                text    : _("Restore"),
+                scope   : this,
+                handler : Ext.Function.bind(me.onRestoreButton, me, [ me ]),
+                margin  : "5 0 0 0"
+            },{
+                border : false,
+                html   : "<ul><li>" + _("Restore settings from a data drive.") + "</li></ul>"
+            }]
         }];
-    }
+    },
+	
+	onBackupButton: function() {
+        var me = this;
+        me.doSubmit();
+        Ext.create("OMV.window.Execute", {
+            title      : _("Backup"),
+            rpcService : "Sabnzbd",
+            rpcMethod  : "doBackup",
+            listeners  : {
+                scope     : me,
+                exception : function(wnd, error) {
+                    OMV.MessageBox.error(null, error);
+                }
+            }
+        }).show();
+    },
+
+	onRestoreButton: function() {
+        var me = this;
+        me.doSubmit();
+        Ext.create("OMV.window.Execute", {
+            title      : _("Restore"),
+            rpcService : "Sabnzbd",
+            rpcMethod  : "doRestore",
+            listeners  : {
+                scope     : me,
+                exception : function(wnd, error) {
+                    OMV.MessageBox.error(null, error);
+                }
+            }
+        }).show();
+    },
 });
 
 OMV.WorkspaceManager.registerPanel({

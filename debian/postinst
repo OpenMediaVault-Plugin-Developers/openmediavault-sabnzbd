@@ -6,55 +6,65 @@ set -e
 . /usr/share/openmediavault/scripts/helper-functions
 
 case "$1" in
-configure)
-    if ! grep -q "^sabnzbd:" /etc/passwd; then
-        echo "Adding sabnzbd user..."
-        useradd --create-home --groups users --no-user-group --shell /usr/sbin/nologin sabnzbd
-    else
-        echo "sabnzbd user already exists."
-    fi
-
-    if [ -f "/var/run/sabnzbd/sabnzbd-8080.pid" ]; then
-        PID=$(cat /var/run/sabnzbd/sabnzbd-8080.pid);
-        kill -0 $PID 2>/dev/null;
-        if [ $? -eq 0 ]; then
-            kill -9 $PID;
-            rm -Rf /var/run/sabnzbd
+    configure)
+        if ! getent passwd sabnzbd >/dev/null 2>&1; then
+            echo "Adding sabnzbd user..."
+            useradd --create-home --groups users --no-user-group --shell /usr/sbin/nologin sabnzbd
+            insserv -d sabnzbd
+        else
+            echo "sabnzbd user already exists."
         fi
-    fi
 
-    chmod 775 /opt
-    chown root:users /opt
-    chown sabnzbd:users /etc/init.d/sabnzbd
-	insserv -d sabnzbd
-	STABLE=`wget -q http://sabnzbd.org/download/ -O - | \grep sourceforge\.net | grep Linux | \sed 's/.*href=\"\(.*\)\".*/\1/' | sed 's/.*-\(.*\)-.*/\1/'`
-    	
-	if [ ! -d /opt/SABnzbd ]; then        
-        wget -q -nv http://downloads.sourceforge.net/project/sabnzbdplus/sabnzbdplus/${STABLE}/SABnzbd-${STABLE}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
-		tar xzf /tmp/sabnzbdplus.tar.gz -C /tmp/
-		cp -fRa /tmp/SABnzbd-${STABLE}/. /opt/SABnzbd/
-		rm -fR /tmp/sabnzbdplus.tar.gz
-        rm -fR /tmp/SABnzbd-${STABLE}
-	fi
+        if [ -f "/var/run/sabnzbd/sabnzbd.pid" ]; then
+            PID=$(cat /var/run/sabnzbd/sabnzbd.pid);
+            kill -0 $PID 2>/dev/null;
+            if [ $? -eq 0 ]; then
+                kill -9 $PID;
+                rm -Rf /var/run/sabnzbd
+            fi
+        fi
+
+        chmod 775 /opt
+        chown root:users /opt
 	
-	if ! omv_config_exists "/config/services/sabnzbd"; then
-        echo "Initial configuration."
-        object="<enable>0</enable>"
-        object="${object}<showtab>0</showtab>"
-        object="${object}<update>0</update>"
-        omv_config_add_element "/config/services" "sabnzbd" "${object}" true
-    fi
+        STABLE=`wget -q http://sabnzbd.org/download/ -O - | \grep sourceforge\.net | grep Linux | \sed 's/.*href=\"\(.*\)\".*/\1/' | sed 's/.*-\(.*\)-.*/\1/'`
+    	
+        if [ ! -d /opt/SABnzbd ]; then        
+            wget -q -nv http://downloads.sourceforge.net/project/sabnzbdplus/sabnzbdplus/${STABLE}/SABnzbd-${STABLE}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
+            tar xzf /tmp/sabnzbdplus.tar.gz -C /tmp/
+            cp -fRa /tmp/SABnzbd-${STABLE}/. /opt/SABnzbd/
+            rm -fR /tmp/sabnzbdplus.tar.gz
+            rm -fR /tmp/SABnzbd-${STABLE}
+        fi
+	
+        if ! omv_config_exists "/config/services/sabnzbd"; then
+            echo "Initial configuration."
+            object="<enable>0</enable>"
+            object="${object}<showtab>0</showtab>"
+            object="${object}<update>0</update>"
+            omv_config_add_element "/config/services" "sabnzbd" "${object}" true
+        fi
 
-    chown -R sabnzbd:users /opt/SABnzbd
-    chown -R sabnzbd:users /etc/init.d/sabnzbd
-	chmod 775 /opt/SABnzbd -R
-    update-rc.d sabnzbd disable
+        chown -R sabnzbd:users /opt/SABnzbd
+        chown -R sabnzbd:users /etc/init.d/sabnzbd
+        chmod 775 /opt/SABnzbd -R
+        
+        omv_install_fixperms
+
+        # Activate package triggers. These triggers are only set during the
+        # package installation.
+        dpkg-trigger update-fixperms
+        dpkg-trigger update-locale
+
+        #update-rc.d sabnzbd disable
     ;;
-abort-upgrade|abort-remove|abort-deconfigure)
+
+    abort-upgrade|abort-remove|abort-deconfigure)
     ;;
-*)
-    echo "postinst called with unknown argument" >&2
-    exit 1
+
+    *)
+        echo "postinst called with unknown argument" >&2
+        exit 1
     ;;
 esac
 

@@ -30,55 +30,72 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract
         return "SABnzbd";
     }
 
+    private function getPluginName() {
+        return strtolower($this->getName());
+    }
+
+    private function getEventMessagePath() {
+        $path = sprintf("org.openmediavault.service.%s", $this->getPluginName());
+        return $path;
+    }
+
+
+    private function getXPath() {
+        $path = sprintf("//services/%s", $this->getPluginName());
+        return $path;
+    }
+
+    public function applyConfig() {
+        $cmd = sprintf("omv-mkconf %s 2>&1", $this->getPluginName());
+
+        if (0 !== $this->exec($cmd, $output))
+            throw new OMVException(OMVErrorMsg::E_EXEC_FAILED, $cmd, implode("\n", $output));
+    }
+
     public function getStatus() {
         global $xmlConfig;
-        $xpath  = "//services/sabnzbd";
-        $object = $xmlConfig->get($xpath);
-        if (is_null($object))
-                        throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED, $xpath);
 
-        $cmd = "/etc/init.d/sabnzbd status";
-        $this->exec($cmd, $output);
+        $object = $xmlConfig->get($this->getXPath());
+
+        if (is_null($object))
+            throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
+                $this->getXPath());
+
+        $initd = new OMVSysVInitScript($this->getName());
+
         return array(
-            "name"    => $this->getName(),
-            "title"   => gettext("SABnzbd"),
-            "enabled" => boolval($object['enable']),
-            "running" => (strpos($output[0], 'is running') > 0)
+            "name"    => $this->getPluginName(),
+            "title"   => gettext($this->getName()),
+            "enabled" => boolval($object["enable"]),
+            "running" => $initd->status() == 0
         );
     }
 
     public function startService() {
         global $xmlConfig;
-        $xpath  = "//services/sabnzbd";
-        $object = $xmlConfig->get($xpath);
-        if (is_null($object))
-                        throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED, $xpath);
 
-        if(FALSE === boolval($object['enable']))
+        $object = $xmlConfig->get($this->getXPath());
+
+        if (is_null($object))
+            throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
+                $this->getXPath());
+
+        if (!boolval($object["enable"]))
             return;
 
-                $initd = new OMVSysVInitScript("sabnzbd", TRUE);
-                $initd->exec();
+        $initd = new OMVSysVInitScript($this->getPluginName(), true);
+        $initd->exec();
     }
 
     public function stopService() {
-        global $xmlConfig;
-        $xpath  = "//services/sabnzbd";
-        $object = $xmlConfig->get($xpath);
-        if (is_null($object))
-                        throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED, $xpath);
-
-        if(TRUE === boolval($object['enable']))
-            return;
-
-                $initd = new OMVSysVInitScript("sabnzbd", FALSE);
-                $initd->exec();
+        $initd = new OMVSysVInitScript($this->getPluginName());
+        $initd->exec();
     }
 
-    public function bindListeners(OMVNotifyDispatcher $dispatcher) {
+    function bindListeners(OMVNotifyDispatcher $dispatcher) {
         $dispatcher->addListener(
             OMV_NOTIFY_MODIFY,
-            "org.openmediavault.services.sabnzbd",
+            $this->getEventMessagePath(),
             array($this, "setDirty"));
     }
 }

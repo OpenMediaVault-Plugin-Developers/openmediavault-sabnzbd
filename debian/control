@@ -2,14 +2,14 @@ Source: openmediavault-sabnzbd
 Section: misc
 Priority: optional
 Maintainer: OpenMediaVault Plugin Developers <plugins@omv-extras.org>
-Build-Depends: debhelper (>= 7 )
+Build-Depends: debhelper (>= 9 )
 Standards-Version: 3.9.3
 
 Package: openmediavault-sabnzbd
 Architecture: all
-Depends: ${misc:Depends}, openmediavault (>= 0.5), openmediavault (<< 0.6),
- python, python-cheetah, python-configobj, python-feedparser,
- par2, python-openssl, python-yenc, unzip, python-support, git,
+Depends: ${misc:Depends}, openmediavault (>= 0.6), python, git,
+ python-cheetah, python-configobj, python-feedparser,
+ par2, python-openssl, python-yenc, unzip, python-support,
  unrar
 Description: OpenMediaVault SABnzbd plugin
  SABnzbd is an Open Source Binary Newsreader written in Python.

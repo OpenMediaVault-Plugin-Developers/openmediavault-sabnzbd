@@ -1,14 +1,5 @@
 #!/bin/bash
 #
-# Copyright (C) 2008-2010 by JCF Ploemen <linux@jp.pp.ru>
-# released under GPL, version 2 or later
-
-################################################
-#                                              #
-#  TO CONFIGURE EDIT /etc/default/sabnzbdplus  #
-#                                              #
-################################################
-
 ### BEGIN INIT INFO
 # Provides:          sabnzbdplus
 # Required-Start:    $local_fs $network $remote_fs
@@ -22,20 +13,31 @@
 
 ############### EDIT ME ##################
 # Path to store PID file
-PID_FILE=/var/run/sabnzbd/sabnzbd-8080.pid
+PID_FILE=/var/run/sabnzbd/sabnzbd.pid
 PID_PATH=/var/run/sabnzbd
 
 # script name
 NAME=sabnzbd
 DESC=SABnzbd
 # startup args
-DAEMON_OPTS="--daemon --pid ${PID_PATH}"
+DAEMON_OPTS="--daemon --pidfile $PID_FILE"
 EXTRA_OPTS=""
 RUN_AS=sabnzbd
 DAEMON=SABnzbd.py
 APP_PATH=/opt/SABnzbd
 CONFIG="/home/sabnzbd/.sabnzbd/sabnzbd.ini"
-PORT="8080"
+HOST="0.0.0.0"
+
+if [ -f $CONFIG ]; then
+	HOST=`grep -m 1 host $CONFIG | cut -d ' ' -f 3`
+    if [ `grep -m 1 enable_https $CONFIG | cut -d ' ' -f 3` == "1" ]; then
+		PORT=`grep -m1 https_port $CONFIG | cut -d ' ' -f 3`
+	else
+		PORT=`grep -m2 port $CONFIG | tail -n1 | cut -d ' ' -f 3`
+	fi
+else
+	PORT="8080"
+fi
 ############### END EDIT ME ##################
 
 test -x $APP_PATH/$DAEMON || exit 0
@@ -69,7 +71,8 @@ fi
 
 load_settings()
 {
-    HOST="0.0.0.0" #Set SABnzbd address here.
+    HOST="0.0.0.0"
+	#Set SABnzbd address here.
     EXTRAOPTS=""
     OPTIONS="$DAEMON_OPTS"
     OPTIONS="$OPTIONS --config-file $CONFIG $EXTRA_OPTS"
