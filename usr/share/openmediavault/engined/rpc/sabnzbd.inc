@@ -92,12 +92,12 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract {
             $cmd = "grep -m1 ^enable_https /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3 2>&1";
             $this->exec($cmd, $output);
             if ($output == "1") {
-                $cmd = "grep ^https_port $CONFIG | cut -d ' ' -f 3 2>&1";
+                $cmd = "grep ^https_port /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3 2>&1";
                 $this->exec($cmd, $output);
                 if ($output == "")
                     $output = "9090";
             } else {
-                $cmd = "grep -m 1 ^port $CONFIG | cut -d ' ' -f 3";
+                $cmd = "grep -m 1 ^port /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3";
                 $this->exec($cmd, $output);
                 if ($output == "")
                     $output = "8080";
