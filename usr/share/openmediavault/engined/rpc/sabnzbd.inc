@@ -89,15 +89,15 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract {
 
         $output = array();
         if (file_exists("/home/sabnzbd/.sabnzbd/sabnzbd.ini")) {
-            $cmd = "grep -m1 enable_https /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3 2>&1";
+            $cmd = "grep -m1 ^enable_https /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3 2>&1";
             $this->exec($cmd, $output);
             if ($output == "1") {
-                $cmd = "grep -m1 port /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3 2>&1";
+                $cmd = "grep ^https_port $CONFIG | cut -d ' ' -f 3 2>&1";
                 $this->exec($cmd, $output);
                 if ($output == "")
                     $output = "9090";
             } else {
-                $cmd = "grep -m2 port /home/sabnzbd/.sabnzbd/sabnzbd.ini | tail -n1 | cut -d ' ' -f 3 2>&1";
+                $cmd = "grep -m 1 ^port $CONFIG | cut -d ' ' -f 3";
                 $this->exec($cmd, $output);
                 if ($output == "")
                     $output = "8080";
@@ -111,7 +111,7 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract {
             
         
 
-        $cmd = "sed -i 's/:[[:digit:]]\{4\}/:" . $output[0] . "/g' /var/www/openmediavault/js/omv/module/admin/service/sabnzbd/WebInterface.js";
+        $cmd = "sed -i 's/:[[:digit:]].*\//:" . $output[0] . "\//g' /var/www/openmediavault/js/omv/module/admin/service/sabnzbd/WebInterface.js";
         $this->exec($cmd);
 
         $object["enable"]  = boolval($object["enable"]);

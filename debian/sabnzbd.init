@@ -29,11 +29,11 @@ CONFIG="/home/sabnzbd/.sabnzbd/sabnzbd.ini"
 HOST="0.0.0.0"
 
 if [ -f $CONFIG ]; then
-	HOST=`grep -m 1 host $CONFIG | cut -d ' ' -f 3`
-    if [ `grep -m 1 enable_https $CONFIG | cut -d ' ' -f 3` == "1" ]; then
-		PORT=`grep -m1 https_port $CONFIG | cut -d ' ' -f 3`
+	#HOST=`grep -m 1 ^host $CONFIG | cut -d ' ' -f 3` Not needed ?
+    if [ `grep -m 1 ^enable_https $CONFIG | cut -d ' ' -f 3` == "1" ]; then
+		PORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
 	else
-		PORT=`grep -m2 port $CONFIG | tail -n1 | cut -d ' ' -f 3`
+		PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
 	fi
 else
 	PORT="8080"
