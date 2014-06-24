@@ -1,4 +1,10 @@
-openmediavault-sabnzbd (1.0.0) UNRELEASED; urgency=medium
+openmediavault-sabnzbd (1.0.1) unstable; urgency=low
+
+  * Fix webserver ports
+
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Tue, 24 Jun 2014 05:38:28 -0500
+
+openmediavault-sabnzbd (1.0.0) unstable; urgency=low
 
   * OMV 1.0 compatibility
 
