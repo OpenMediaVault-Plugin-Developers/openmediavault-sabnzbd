@@ -192,7 +192,7 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
                     proxy : {
                         type : "rpc",
                         rpcData : {
-                            service : "Sabnzbd",
+                            service : "ShareMgmt",
                             method  : "getCandidates"
                         },
                         appendSortParams : false
