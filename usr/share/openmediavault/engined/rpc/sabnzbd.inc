@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (C) 2013 OpenMediaVault Plugin Developers
+ * Copyright (C) 2013-2014 OpenMediaVault Plugin Developers
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,13 +21,16 @@ require_once "openmediavault/config.inc";
 require_once "openmediavault/error.inc";
 require_once "openmediavault/notify.inc";
 require_once "openmediavault/object.inc";
+require_once "openmediavault/product.inc";
 require_once "openmediavault/rpcservice.inc";
+require_once "openmediavault/system.inc";
 require_once "openmediavault/util.inc";
-require_once("openmediavault/product.inc");
-require_once("openmediavault/system.inc");
 
 class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
 {
+    private $sabnzbdSettingsDir = "/home/sabnzbd/.sabnzbd/";
+    private $sabnzbdSettingsFile = "/home/sabnzbd/.sabnzbd/sabnzbd.ini";
+
     private function getPluginName()
     {
         return strtolower($this->getName());
@@ -48,33 +51,6 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
         return "Sabnzbd";
     }
 
-    public function startService()
-    {
-        global $xmlConfig;
-
-        $object = $xmlConfig->get($this->getXPath());
-
-        if (is_null($object)) {
-            throw new OMVException(
-                OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
-                $this->getXPath()
-            );
-        }
-
-        if (!boolval($object["enable"])) {
-            return;
-        }
-
-        $initd = new OMVSysVInitScript($this->getPluginName(), true);
-        $initd->exec();
-    }
-
-    public function stopService()
-    {
-        $initd = new OMVSysVInitScript($this->getPluginName());
-        $initd->exec();
-    }
-
     public function initialize()
     {
         $this->registerMethod("getSettings");
@@ -87,45 +63,72 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
 
     public function getSettings($params, $context)
     {
-        $this->exec("omv-mkconf sabnzbd getsettings");
+        $this->exec("omv-mkconf sabnzbd getsettings
+
         global $xmlConfig;
 
-        $this->validateMethodContext($context, array( "role" => OMV_ROLE_ADMINISTRATOR ));
+        $this->validateMethodContext($context, array(
+            "role" => OMV_ROLE_ADMINISTRATOR
+        ));
 
         $object = $xmlConfig->get($this->getXPath());
 
         if (is_null($object)) {
             throw new OMVException(
                 OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
-                $xpath
+                $XPath
             );
         }
 
-        $output = array();
-        if (file_exists("/home/sabnzbd/.sabnzbd/sabnzbd.ini")) {
-            $cmd = "grep -m1 ^enable_https /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3 2>&1";
-            $this->exec($cmd, $output);
-            if ($output[0] == "1") {
-                $cmd = "grep ^https_port /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3 2>&1";
-                $this->exec($cmd, $output);
-                if ($output[0] == "")
-                    $output[0] = "9090";
-            } else {
-                $cmd = "grep -m 1 ^port /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3";
-                $this->exec($cmd, $output);
-                if ($output[0] == "")
-                    $output[0] = "8080";
-            }
+        $port = 8080;
 
+        // Get current port as set in Sabnzbd config file
+        if (file_exists($this->sabnzbdSettingsFile)) {
+            $config = parse_ini_file(
+                $this->sabnzbdSettingsFile,
+                true,
+                INI_SCANNER_RAW
+            );
+
+            if (!empty($config["misc"]["enable_https"])) {
+                $ssl = $config["misc"]["enable_https"];
+            }
+            if ($ssl == "1") {
+                if (!empty($config["misc"]["https_port"])) {
+                    $port = $config["misc"]["https_port"];
+                }
+            } else {
+                if (!empty($config["misc"]["port"])) {
+                    $port = $config["misc"]["port"];
+                }
+            }
         }
-        if (! file_exists("/home/sabnzbd/.sabnzbd/sabnzbd.ini")) {
-            $output[0] = "8080";
-        }
+
+        //$output = array();
+        //if (file_exists("/home/sabnzbd/.sabnzbd/sabnzbd.ini")) {
+        //    $cmd = "grep -m1 ^enable_https /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3 2>&1";
+        //    $this->exec($cmd, $output);
+        //    if ($output[0] == "1") {
+        //        $cmd = "grep ^https_port /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3 2>&1";
+        //        $this->exec($cmd, $output);
+        //        if ($output[0] == "")
+        //            $output[0] = "9090";
+        //    } else {
+        //        $cmd = "grep -m 1 ^port /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3";
+        //        $this->exec($cmd, $output);
+        //        if ($output[0] == "")
+        //            $output[0] = "8080";
+        //    }
+
+        //}
+        //if (! file_exists("/home/sabnzbd/.sabnzbd/sabnzbd.ini")) {
+        //    $output[0] = "8080";
+        //}
 
         $object["enable"]  = boolval($object["enable"]);
         $object["showtab"] = boolval($object["showtab"]);
         $object["update"]  = boolval($object["update"]);
-        $object["port"]    = $output[0];
+        $object["port"]    = intval($port);
 
         return $object;
     }
@@ -134,7 +137,9 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
     {
         global $xmlConfig;
 
-        $this->validateMethodContext($context, array("role" => OMV_ROLE_ADMINISTRATOR));
+        $this->validateMethodContext($context, array(
+            "role" => OMV_ROLE_ADMINISTRATOR
+        ));
 
         $this->validateMethodParams(
             $params,
@@ -160,14 +165,13 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
         $backupPath = "{$deviceDir}/SABbackup";
         $params['path'] = $backupPath;
 
-
         // Get existing configuration object
         $oldObject = $xmlConfig->get($this->getXPath());
 
         if (is_null($oldObject)) {
             throw new OMVException(
                 OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
-                $xpath
+                $XPath
             );
         }
 
@@ -188,7 +192,11 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
         }
 
         $dispatcher = &OMVNotifyDispatcher::getInstance();
-        $dispatcher->notify(OMV_NOTIFY_MODIFY, $this->getEventMessagePath(), $object);
+        $dispatcher->notify(
+            OMV_NOTIFY_MODIFY,
+            $this->getEventMessagePath(),
+            $object
+        );
 
         return $object;
     }
@@ -196,18 +204,27 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
     public function doBackup($params, $context)
     {
         global $xmlConfig;
-		
-        if (! file_exists("/home/sabnzbd/.sabnzbd/sabnzbd.ini")) {
-            throw new OMVException(OMVErrorMsg::E_EXEC_MISC, "No settings folder found!");
+
+        // Sabnzbd needs to have run once to generate its
+        // settings. Check if this is true
+        if (!file_exists($this->sabnzbdSettingsFile)) {
+            throw new OMVException(
+                OMVErrorMsg::E_EXEC_MISC,
+                "No settings folder found!"
+            );
         }
 
         // Validate the RPC caller context.
-        $this->validateMethodContext($context, array( "role" => OMV_ROLE_ADMINISTRATOR ));
+        $this->validateMethodContext($context, array(
+            "role" => OMV_ROLE_ADMINISTRATOR
+        ));
 
         // Create a background process.
         $bgStatusFilename = $this->createBgProcStatus();
         $pid = $this->fork();
-        if($pid > 0) { // Parent process.
+
+        // Parent process.
+        if ($pid > 0) {
             $this->initializeBgProcStatus($bgStatusFilename, $pid);
             return $bgStatusFilename;
         }
@@ -215,15 +232,26 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
         // Child process.
         try {
             $bgOutputFilename = $this->createBgProcOutput();
-            $this->updateBgProcStatus($bgStatusFilename, "outputfilename", $bgOutputFilename);
+            $this->updateBgProcStatus(
+                $bgStatusFilename,
+                "outputfilename",
+                $bgOutputFilename
+            );
 
-            $path = $xmlConfig->get("//services/sabnzbd/path");
+            // Get the configuration object.
+            $xPath = sprintf("%s/path", $this->getXPath());
+            $backupPath = $xmlConfig->get($xPath);
 
-            $cmd = sprintf("tar --exclude='/home/sabnzbd/.sabnzbd/Downloads'  -zcvf %s /home/sabnzbd/.sabnzbd 2>&1", $path);
+            $cmd = sprintf(
+                "tar -zcvPf %s %s 2>&1",
+                $backupPath,
+                $this->sabnzbdSettingsDir
+            );
+
             $this->exec($cmd, $output, $bgOutputFilename);
             $this->finalizeBgProcStatus($bgStatusFilename, $output);
             exit(0);
-        } catch(Exception $e) {
+        } catch (\Exception $e) {
             $this->finalizeBgProcStatus($bgStatusFilename, "", $e);
             exit(1);
         }
@@ -234,44 +262,59 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
         global $xmlConfig;
 
         // Validate the RPC caller context.
-        $this->validateMethodContext($context, array( "role" => OMV_ROLE_ADMINISTRATOR ));
+        $this->validateMethodContext($context, array(
+            "role" => OMV_ROLE_ADMINISTRATOR
+        ));
 
         // Get the configuration object.
-        $path = $xmlConfig->get("//services/sabnzbd/path");
-        $dirPath = "/home/sabnzbd/.sabnzbd";
-        if(is_null($path)) {
-            throw new OMVException(OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED, $xpath);
+        $xPath = sprintf("%s/path", $this->getXPath());
+        $backupPath = $xmlConfig->get($xPath);
+
+        if (is_null($backupPath)) {
+            throw new OMVException(
+                OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
+                $xPath
+            );
         }
 
         // Check if backup is present.
-        if (file_exists($path)) {
+        if (file_exists($backupPath)) {
             // Create a background process.
             $bgStatusFilename = $this->createBgProcStatus();
             $pid = $this->fork();
-            if($pid > 0) { // Parent process.
+
+            // Parent process.
+            if ($pid > 0) {
                 $this->initializeBgProcStatus($bgStatusFilename, $pid);
                 return $bgStatusFilename;
             }
 
-            // Delete current folder
-            system("rm -rf ".escapeshellarg($dirPath));
+            // Delete current settings folder
+            rmdir($this->sabnzbdSettingsDir);
 
+            // Get the Sabnzbd module
+            $moduleMgr = &OMVModuleMgr::getInstance();
+            $sabnzbdModule = $moduleMgr->getModule($this->getName());
 
             // Child process.
             try {
-                $this->stopService();
+                $sabnzbdModule->stopService();
                 $bgOutputFilename = $this->createBgProcOutput();
-                $this->updateBgProcStatus($bgStatusFilename, "outputfilename", $bgOutputFilename);
+                $this->updateBgProcStatus(
+                    $bgStatusFilename,
+                    "outputfilename",
+                    $bgOutputFilename
+                );
 
                 $cmd = sprintf("tar -zxvf %s -C / 2>&1", $path);
 
                 $this->exec($cmd, $output, $bgOutputFilename);
                 $this->finalizeBgProcStatus($bgStatusFilename, $output);
-                $this->startService();
+                $sabnzbdModule->startService();
                 exit(0);
             } catch(Exception $e) {
                 $this->finalizeBgProcStatus($bgStatusFilename, "", $e);
-                $this->startService();
+                $sabnzbdModule->startService();
                 exit(1);
             }
         } else {
@@ -282,8 +325,10 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
     public function doUpdateSAB($params, $context)
     {
         $cmd = "omv-mkconf sabnzbd update 2>&1";
-        if(0 !== $this->exec($cmd, $output))
+        if(0 !== $this->exec($cmd, $output)) {
            throw new OMVException(OMVErrorMsg::E_EXEC_FAILED, $cmd, implode("\n", $output));
+        }
+
         $dispatcher = &OMVNotifyDispatcher::getInstance();
         $dispatcher->notify(OMV_NOTIFY_MODIFY, $this->getEventMessagePath(), $object);
     }

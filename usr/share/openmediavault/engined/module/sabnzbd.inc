@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (C)      2013 OpenMediaVault Plugin Developers
+ * Copyright (C) 2013-2014 OpenMediaVault Plugin Developers
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,12 +35,6 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract implements
     private function getEventMessagePath()
     {
         return sprintf("org.openmediavault.service.%s", $this->getPluginName());
-    }
-
-    private function getEventMessagePathFork()
-    {
-        $path = sprintf("%s.forks.fork", $this->getEventMessagePath());
-        return $path;
     }
 
     private function getXPath()
