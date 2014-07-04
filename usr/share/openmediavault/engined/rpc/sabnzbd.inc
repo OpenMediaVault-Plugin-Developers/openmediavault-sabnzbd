@@ -55,15 +55,23 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
     {
         $this->registerMethod("getSettings");
         $this->registerMethod("setSettings");
-        $this->registerMethod('doUpdateSAB');
+        $this->registerMethod("doUpdateSAB");
 
-        $this->registerMethod('doBackup');
-        $this->registerMethod('doRestore');
+        $this->registerMethod("doBackup");
+        $this->registerMethod("doRestore");
     }
 
     public function getSettings($params, $context)
     {
-        $this->exec("omv-mkconf sabnzbd getsettings
+        $cmd = sprintf("omv-mkconf %s getsettings", $this->getPluginName());
+
+        if (0 !== $this->exec($cmd, $output)) {
+            throw new OMVException(
+                OMVErrorMsg::E_EXEC_FAILED,
+                $cmd,
+                implode("\n", $output)
+            );
+        }
 
         global $xmlConfig;
 
@@ -91,9 +99,9 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
             );
 
             if (!empty($config["misc"]["enable_https"])) {
-                $ssl = $config["misc"]["enable_https"];
+                $sslIsEnabled = boolval($config["misc"]["enable_https"]);
             }
-            if ($ssl == "1") {
+            if ($sslIsEnabled) {
                 if (!empty($config["misc"]["https_port"])) {
                     $port = $config["misc"]["https_port"];
                 }
@@ -150,20 +158,20 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
                     "showtab"   : { "type" : "boolean" },
                     "update"    : { "type" : "boolean" },
                     "port"      : { "type" : "integer" },
-                    "mntentref" : { ' . $GLOBALS['OMV_JSONSCHEMA_UUID_NONE'] . ' },
+                    "mntentref" : { ' . $GLOBALS["OMV_JSONSCHEMA_UUID_NONE"] . ' },
                     "path"      : { "type" : "string", "optional" : true }
                 }
             }'
         );
 
 
-        $xpath = sprintf("//system/fstab/mntent[uuid='%s']", $params['mntentref']);
-        $deviceDir = $xmlConfig->get($xpath);
-        $deviceDir = $deviceDir['dir'];
+        $xPath = sprintf("//system/fstab/mntent[uuid='%s']", $params["mntentref"]);
+        $deviceDir = $xmlConfig->get($xPath);
+        $deviceDir = $deviceDir["dir"];
 
 
-        $backupPath = "{$deviceDir}/SABbackup";
-        $params['path'] = $backupPath;
+        $backupPath = "$deviceDir/SABbackup";
+        $params["path"] = $backupPath;
 
         // Get existing configuration object
         $oldObject = $xmlConfig->get($this->getXPath());
@@ -171,7 +179,7 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
         if (is_null($oldObject)) {
             throw new OMVException(
                 OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
-                $XPath
+                $xPath
             );
         }
 
@@ -306,13 +314,13 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
                     $bgOutputFilename
                 );
 
-                $cmd = sprintf("tar -zxvf %s -C / 2>&1", $path);
+                $cmd = sprintf("tar -zxvf %s -C / 2>&1", $backupPath);
 
                 $this->exec($cmd, $output, $bgOutputFilename);
                 $this->finalizeBgProcStatus($bgStatusFilename, $output);
                 $sabnzbdModule->startService();
                 exit(0);
-            } catch(Exception $e) {
+            } catch (\Exception $e) {
                 $this->finalizeBgProcStatus($bgStatusFilename, "", $e);
                 $sabnzbdModule->startService();
                 exit(1);
@@ -324,13 +332,22 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
 
     public function doUpdateSAB($params, $context)
     {
-        $cmd = "omv-mkconf sabnzbd update 2>&1";
-        if(0 !== $this->exec($cmd, $output)) {
-           throw new OMVException(OMVErrorMsg::E_EXEC_FAILED, $cmd, implode("\n", $output));
+        $cmd = sprintf("omv-mkconf %s update 2>&1", $this->getPluginName());
+
+        if (0 !== $this->exec($cmd, $output)) {
+            throw new OMVException(
+                OMVErrorMsg::E_EXEC_FAILED,
+                $cmd,
+                implode("\n", $output)
+            );
         }
 
         $dispatcher = &OMVNotifyDispatcher::getInstance();
-        $dispatcher->notify(OMV_NOTIFY_MODIFY, $this->getEventMessagePath(), $object);
+        $dispatcher->notify(
+            OMV_NOTIFY_MODIFY,
+            $this->getEventMessagePath(),
+            $object
+        );
     }
 }
 
@@ -338,4 +355,3 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
 $rpcServiceMgr = &OMVRpcServiceMgr::getInstance();
 $rpcServiceMgr->registerService(new OMVRpcServiceSabnzbd());
 
-?>

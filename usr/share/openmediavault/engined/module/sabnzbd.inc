@@ -39,8 +39,7 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract implements
 
     private function getXPath()
     {
-        $path = sprintf("//services/%s", $this->getPluginName());
-        return $path;
+        return sprintf("//services/%s", $this->getPluginName());
     }
 
     public function getName()
@@ -98,12 +97,13 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract implements
         $initd->exec();
     }
 
-    function bindListeners(OMVNotifyDispatcher $dispatcher)
+    public function bindListeners(OMVNotifyDispatcher $dispatcher)
     {
         $dispatcher->addListener(
             OMV_NOTIFY_MODIFY,
             $this->getEventMessagePath(),
-            array($this, "setDirty"));
+            array($this, "setDirty")
+        );
     }
 }
 
