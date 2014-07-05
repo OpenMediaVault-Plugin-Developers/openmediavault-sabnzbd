@@ -84,7 +84,7 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
         if (is_null($object)) {
             throw new OMVException(
                 OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
-                $XPath
+                $this->getXPath()
             );
         }
 
@@ -179,7 +179,7 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
         if (is_null($oldObject)) {
             throw new OMVException(
                 OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
-                $xPath
+                $this->getXPath()
             );
         }
 
@@ -259,7 +259,7 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
             $this->exec($cmd, $output, $bgOutputFilename);
             $this->finalizeBgProcStatus($bgStatusFilename, $output);
             exit(0);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->finalizeBgProcStatus($bgStatusFilename, "", $e);
             exit(1);
         }
@@ -320,7 +320,7 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
                 $this->finalizeBgProcStatus($bgStatusFilename, $output);
                 $sabnzbdModule->startService();
                 exit(0);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->finalizeBgProcStatus($bgStatusFilename, "", $e);
                 $sabnzbdModule->startService();
                 exit(1);
@@ -354,4 +354,3 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
 // Register the RPC service.
 $rpcServiceMgr = &OMVRpcServiceMgr::getInstance();
 $rpcServiceMgr->registerService(new OMVRpcServiceSabnzbd());
-
