@@ -112,27 +112,6 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
             }
         }
 
-        //$output = array();
-        //if (file_exists("/home/sabnzbd/.sabnzbd/sabnzbd.ini")) {
-        //    $cmd = "grep -m1 ^enable_https /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3 2>&1";
-        //    $this->exec($cmd, $output);
-        //    if ($output[0] == "1") {
-        //        $cmd = "grep ^https_port /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3 2>&1";
-        //        $this->exec($cmd, $output);
-        //        if ($output[0] == "")
-        //            $output[0] = "9090";
-        //    } else {
-        //        $cmd = "grep -m 1 ^port /home/sabnzbd/.sabnzbd/sabnzbd.ini | cut -d ' ' -f 3";
-        //        $this->exec($cmd, $output);
-        //        if ($output[0] == "")
-        //            $output[0] = "8080";
-        //    }
-
-        //}
-        //if (! file_exists("/home/sabnzbd/.sabnzbd/sabnzbd.ini")) {
-        //    $output[0] = "8080";
-        //}
-
         $object["enable"]  = boolval($object["enable"]);
         $object["showtab"] = boolval($object["showtab"]);
         $object["update"]  = boolval($object["update"]);
