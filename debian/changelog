@@ -1,3 +1,9 @@
+openmediavault-sabnzbd (1.0.3) unstable; urgency=low
+
+  * Fix updating
+
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Sun, 02 Nov 2014 05:38:28 -0500
+
 openmediavault-sabnzbd (1.0.2) unstable; urgency=low
 
   * Fix version info parsing

@@ -27,7 +27,7 @@ case "$1" in
         chmod 775 /opt
         chown root:users /opt
 	
-        STABLE=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 src.tar.gz | sed 's/.*SABnzbd-\(.*\)-src.tar.gz.*/\1/'`
+        STABLE=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 src.tar.gz | sed 's/.*SABnzbd-\(.*\)-osx-src.tar.gz.*/\1/'`
     	
         if [ ! -d /opt/SABnzbd ]; then        
             wget -q -nv http://downloads.sourceforge.net/project/sabnzbdplus/sabnzbdplus/${STABLE}/SABnzbd-${STABLE}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
