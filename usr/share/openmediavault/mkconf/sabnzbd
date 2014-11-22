@@ -24,7 +24,7 @@ CONFIG="/home/sabnzbd/.sabnzbd/sabnzbd.ini"
 
 update() {
 service sabnzbd stop
-ver1=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 src.tar.gz | sed 's/.*SABnzbd-\(.*\)-.*/\1/'`
+ver1=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
 if [ "$ver1" == "" ]; then
     exit
 fi
@@ -38,7 +38,7 @@ chmod 775 /opt/SABnzbd -R
 }
 
 getsettings() {
-ver1=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 src.tar.gz | sed 's/.*SABnzbd-\(.*\)-.*/\1/'`
+ver1=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
 ver2=`cat /opt/SABnzbd/sabnzbd/version.py | grep '__version__ = ' | sed 's/__version__ = "\(.*\)"/\1/g'`
 #ver2=0.7.00 #use to test if button shows if values do not match
 if [ "$ver1" == "$ver2" ]; then

@@ -1,6 +1,6 @@
 openmediavault-sabnzbd (1.0.4) unstable; urgency=low
 
-  * Fix updating again, will look into a more robust method
+  * Fix updating hopfully for good
 
  -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Sat, 22 Nov 2014 05:38:28 -0500
 
