@@ -26,6 +26,7 @@ case "$1" in
                     --no-create-home \
                     --disabled-password \
                     $OMV_SABNZBD_USER
+            insserv -d sabnzbd
         else
             echo "sabnzbd user already exists."
         fi
@@ -52,7 +53,10 @@ case "$1" in
 	
         if ! omv_config_exists "${SERVICE_XPATH}"; then
             echo "Initial configuration."
+            omv_config_add_element "/config/services" "${SERVICE_XPATH_NAME}"
             omv_config_add_element "${SERVICE_XPATH}" "enable" "0"
+            omv_config_add_element "${SERVICE_XPATH}" "newinstance" "0"
+            omv_config_add_element "${SERVICE_XPATH}" "newinstenable" "0"
             omv_config_add_element "${SERVICE_XPATH}" "ssl" "0"
             omv_config_add_element "${SERVICE_XPATH}" "ppass" "0"
             omv_config_add_element "${SERVICE_XPATH}" "showtab" "0"

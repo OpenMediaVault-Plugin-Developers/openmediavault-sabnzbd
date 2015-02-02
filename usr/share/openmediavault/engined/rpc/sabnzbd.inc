@@ -65,15 +65,15 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
 
     public function getSettings($params, $context)
     {
-        //$cmd = sprintf("omv-mkconf %s getsettings", $this->getPluginName());
+        $cmd = sprintf("omv-mkconf %s getsettings", $this->getPluginName());
 
-        //if (0 !== $this->exec($cmd, $output)) {
-        //    throw new OMVException(
-        //        OMVErrorMsg::E_EXEC_FAILED,
-        //        $cmd,
-        //        implode("\n", $output)
-        //    );
-        //}
+        if (0 !== $this->exec($cmd, $output)) {
+            throw new OMVException(
+                OMVErrorMsg::E_EXEC_FAILED,
+                $cmd,
+                implode("\n", $output)
+            );
+        }
 
         global $xmlConfig;
 
@@ -146,7 +146,7 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
                     "ppass"         : { "type" : "boolean" },
                     "ssl"           : { "type" : "boolean" },
                     "update"        : { "type" : "boolean" },
-                    "port"          : { "type" : "integer" },
+                    "port"          : { "type" : "integer" }
                 }
             }'
         );

@@ -1,33 +1,20 @@
 #!/bin/bash
-#
-# @license   http://www.gnu.org/licenses/gpl.html GPL Version 3
-# @author    Marcel Beck <marcel.beck@mbeck.org>
-# @copyright Copyright (c) 2012 Marcel Beck
-#
-# This file is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# any later version.
-#
-# This file is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this file. If not, see <http://www.gnu.org/licenses/>.
 
 set -e
-CONFIG="/home/sabnzbd/.sabnzbd/sabnzbd.ini"
+
+CONFIG="/var/opt/sabnzbd/sabnzbd.ini"
+
 . /etc/default/openmediavault
 . /usr/share/openmediavault/scripts/helper-functions
 
 update() {
 service sabnzbd stop
+
 ver1=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
 if [ "$ver1" == "" ]; then
     exit
 fi
+
 wget -q -nv http://downloads.sourceforge.net/project/sabnzbdplus/sabnzbdplus/${ver1}/SABnzbd-${ver1}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
 tar xzf /tmp/sabnzbdplus.tar.gz -C /tmp/
 cp -fRa /tmp/SABnzbd-${ver1}/. /opt/SABnzbd/
@@ -40,11 +27,303 @@ chmod 775 /opt/SABnzbd -R
 getsettings() {
 ver1=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
 ver2=`cat /opt/SABnzbd/sabnzbd/version.py | grep '__version__ = ' | sed 's/__version__ = "\(.*\)"/\1/g'`
+
 #ver2=0.7.00 #use to test if button shows if values do not match
 if [ "$ver1" == "$ver2" ]; then
     xmlstarlet ed -L -u "//services/sabnzbd/update" -v 0 -n ${OMV_CONFIG_FILE}
 else
     xmlstarlet ed -L -u "//services/sabnzbd/update" -v 1 -n ${OMV_CONFIG_FILE}
+fi
+
+if [ -f $CONFIG ]; then
+	HOST=`grep -m 1 host $CONFIG | cut -d ' ' -f 3`
+    if [ `grep -m 1 enable_https $CONFIG | cut -d ' ' -f 3` == "1" ]; then
+		PORT=`grep -m1 https_port $CONFIG | cut -d ' ' -f 3`
+	else
+		PORT=`grep -m2 port $CONFIG | tail -n1 | cut -d ' ' -f 3`
+	fi
+else
+	PORT="8080"
+fi
+
+xmlstarlet ed -L -u "//services/sabnzbd/port" -v $PORT -n ${OMV_CONFIG_FILE}
+}
+
+setsettings() {
+newinstance="$(omv_config_get "//services/sabnzbd/newinstance")"
+newinstenable="$(omv_config_get "//services/sabnzbd/newinstenable")"
+ppass="$(omv_config_get "//services/sabnzbd/ppass")"
+ssl="$(omv_config_get "//services/sabnzbd/ssl")"
+ver1=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
+ver2=`cat /opt/SABnzbd/sabnzbd/version.py | grep '__version__ = ' | sed 's/__version__ = "\(.*\)"/\1/g'`
+
+#ver2=0.7.00 #use to test if button shows if values do not match
+if [ "$ver1" == "$ver2" ]; then
+    xmlstarlet ed -L -u "//services/sabnzbd/update" -v 0 -n ${OMV_CONFIG_FILE}
+else
+    xmlstarlet ed -L -u "//services/sabnzbd/update" -v 1 -n ${OMV_CONFIG_FILE}
+fi
+
+if [ "${newinstance}" = "1" ]; then
+    if  [ ! -f /etc/init.d/sabnzbd2 ]; then
+        cat > /etc/init.d/sabnzbd2 <<'EOF'
+#!/bin/sh
+#
+### BEGIN INIT INFO
+# Provides:          sabnzbd2
+# Required-Start:    $local_fs $network $remote_fs
+# Required-Stop:     $local_fs $network $remote_fs
+# Should-Start:      NetworkManager
+# Should-Stop:       NetworkManager
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: SABnzbd binary newsgrabber
+### END INIT INFO
+
+############### EDIT ME ##################
+# Path to store PID file
+PID_FILE="/var/run/sabnzbd/sabnzbd2.pid"
+PID_PATH=`dirname $PID_FILE`
+
+# script name
+NAME="sabnzbd2"
+DESC="SABnzbd2"
+# startup args
+DAEMON_OPTS="--daemon --pidfile $PID_FILE"
+EXTRA_OPTS=""
+RUN_AS="sabnzbd"
+DAEMON="SABnzbd.py"
+APP_PATH="/opt/SABnzbd"
+CONFIG="/var/opt/sabnzbd2/sabnzbd.ini"
+HOST="0.0.0.0"
+
+if [ -f "$CONFIG" ]; then
+	#HOST=`grep -m 1 ^host $CONFIG | cut -d ' ' -f 3` Not needed ?
+    if [ `grep -m 1 ^enable_https $CONFIG | cut -d ' ' -f 3` == "1" ]; then
+		PORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
+	else
+		PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
+	fi
+else
+	PORT="8080"
+fi
+############### END EDIT ME ##################
+
+test -x $APP_PATH/$DAEMON || exit 0
+
+[ -r /etc/default/locale ] && {
+	. /etc/default/locale;
+	[ -n "$LANG" ] && export LANG;
+}
+
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
+. /lib/lsb/init-functions
+
+set -e
+
+if [ ! -d $PID_PATH ]; then
+    mkdir -p $PID_PATH
+	chown -R $RUN_AS:users $PID_PATH
+fi
+
+if [ ! -d /var/opt/sabnzbd2 ]; then
+    mkdir -p /var/opt/sabnzbd2
+	chown -R $RUN_AS:users /var/opt/sabnzbd2
+fi
+
+if [ -e $PID_FILE ]; then
+    PID=`cat $PID_FILE`
+    if ! kill -0 $PID > /dev/null 2>&1; then
+        echo "Removing stale $PID_FILE"
+        rm $PID_FILE
+    fi
+fi
+
+load_settings()
+{
+    HOST="0.0.0.0"
+	#Set SABnzbd address here.
+    EXTRAOPTS=""
+    OPTIONS="$DAEMON_OPTS"
+    OPTIONS="$OPTIONS --config-file $CONFIG $EXTRA_OPTS"
+    SERVER="$HOST"
+    SERVER="$SERVER:$PORT"
+    OPTIONS="$OPTIONS --server $SERVER"
+    OPTIONS="$OPTIONS $EXTRAOPTS"
+}
+
+is_running()
+{
+    if [ ! -e $PID_FILE ]; then
+        return 1
+    fi
+    return 0
+}
+
+case "$1" in
+    start)
+        echo "Starting $DESC"
+        load_settings;
+        cd $APP_PATH
+        eval start-stop-daemon -d $APP_PATH -c $RUN_AS --start --exec $DAEMON -- $OPTIONS
+        ;;
+
+    stop)
+        if is_running; then
+            echo "Stopping $DESC"
+            start-stop-daemon --stop --pidfile $PID_FILE --retry 30
+        fi
+        ;;
+
+    restart|force-reload)
+        if is_running; then
+            start-stop-daemon --stop --pidfile $PID_FILE --retry 30
+        fi
+        echo "Restarting $DESC"
+        load_settings;
+        cd $APP_PATH
+        start-stop-daemon -d $APP_PATH -c $RUN_AS --start --exec $DAEMON -- $OPTIONS
+        ;;
+
+    status)
+        status_of_proc -p $PID_FILE "$DAEMON" "$NAME"
+        ;;
+
+    *)
+        N=/etc/init.d/$NAME
+        echo "Usage: $N {start|stop|restart|status|force-reload}" >&2
+        exit 1
+        ;;
+esac
+
+exit 0
+
+EOF
+        chmod +x /etc/init.d/sabnzbd2
+        insserv -d sabnzbd2
+    fi
+
+    if [ "${newinstenable}" = "1" ]; then
+        if [ ! -d $OMV_SABNZBD2_DATA_PATH ]; then
+            mkdir -p $OMV_SABNZBD2_DATA_PATH
+            chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GROUP $OMV_SABNZBD2_DATA_PATH
+        fi
+
+        if [ ! -f $OMV_SABNZBD2_DATA_CONFIG ]; then
+            echo '__version__ = 19
+[misc]
+https_port = 9090
+https_cert = server.cert
+https_key = server.key
+https_chain = ""
+port = 8090
+ssl_type = v23
+host = 0.0.0.0
+enable_https = 0' > $OMV_SABNZBD2_DATA_CONFIG
+            chown $OMV_SABNZBD2_USER:$OMV_SABNZBD2_GROUP $OMV_SABNZBD2_DATA_CONFIG
+            chmod 775 $OMV_SABNZBD2_DATA_CONFIG
+        else
+            sed -i 's/^port = 8080/port = 8090/' $OMV_SABNZBD2_DATA_CONFIG
+            sed -i 's/^https_port.*/https_port = 9090/' $OMV_SABNZBD2_DATA_CONFIG
+        fi
+else
+    if  [ -f "/etc/init.d/sabnzbd2" ]; then
+        update-rc.d sabnzbd2 disable > /dev/null 2>&1
+        if [ -f "/var/run/sabnzbd/sabnzbd2.pid" ]; then
+            PID=$(cat /var/run/sabnzbd/sabnzbd2.pid);
+            kill -0 $PID 2>/dev/null;
+
+            if [ $? -eq 0 ]; then
+                kill -9 $PID;
+                #rm -Rf /var/run/sabnzbd/sabnzbd2.pid > /dev/null 2>&1
+            fi
+        fi
+
+        find $OMV_SABNZBD2_DATA_PATH -mindepth 1 -delete
+        rm -Rf /etc/init.d/sabnzbd2
+    fi
+fi
+
+if [ "${ssl}" = "1" ]; then
+    if [ -f $OMV_SABNZBD1_DATA_CONFIG ]; then
+        sed -i 's/^enable_https.*/enable_https = 1/' $OMV_SABNZBD1_DATA_CONFIG
+    fi
+
+    if [ -f $OMV_SABNZBD2_DATA_CONFIG ]; then
+        sed -i 's/^enable_https.*/enable_https = 1/' $OMV_SABNZBD2_DATA_CONFIG
+    fi
+else
+    if [ -f $OMV_SABNZBD1_DATA_CONFIG ]; then
+        sed -i 's/^enable_https.*/enable_https = 0/' $OMV_SABNZBD1_DATA_CONFIG
+    fi
+
+    if [ -f $OMV_SABNZBD2_DATA_CONFIG ]; then
+        sed -i 's/^enable_https.*/enable_https = 0/' $OMV_SABNZBD2_DATA_CONFIG
+    fi
+fi
+
+if [ "${ppass}" = "1" ]; then
+    cat <<EOF > /etc/nginx/openmediavault-webgui.d/sab.conf
+location /sabnzbd {
+        proxy_pass        http://localhost:8080/sabnzbd;
+        proxy_set_header  Host localhost:8080;
+        proxy_redirect    default;
+}
+
+EOF
+    #if [ -f $OMV_SABNZBD1_DATA_CONFIG ]; then
+    #    sed -i 's/^web_root.*/web_root = "\/sabnzbd"/' $OMV_SABNZBD1_DATA_CONFIG
+    #fi
+
+    if [ "${newinstance}" = "1" ]; then
+        #if [ -f $OMV_SABNZBD2_DATA_CONFIG ]; then
+        #    sed -i 's/^web_root.*/web_root = "\/sabnzbd2"/' $OMV_SABNZBD2_DATA_CONFIG
+        #fi
+
+        cat <<EOF >> /etc/nginx/openmediavault-webgui.d/sab.conf
+location /sabnzbd2 {
+        proxy_pass        http://localhost:8090/sabnzbd;
+        proxy_set_header  Host localhost:8090;
+        proxy_redirect    default;
+}
+
+EOF
+    fi
+    nginx -s reload
+else
+    rm -Rf /etc/nginx/openmediavault-webgui.d/sab.conf > /dev/null 2>&1
+    #if [ -f $OMV_SABNZBD1_DATA_CONFIG ]; then
+    #    sed -i 's/^web_root.*/web_root = ""/' $OMV_SABNZBD1_DATA_CONFIG
+    #fi
+
+    #if [ -f $OMV_SABNZBD2_DATA_CONFIG ]; then
+    #    sed -i 's/^web_root.*/web_root = ""/' $OMV_SABNZBD2_DATA_CONFIG
+    #fi
+    nginx -s reload
+fi
+
+if [ "${newinstance}" = "1" ] && [ "${newinstenable}" = "1" ]; then
+    update-rc.d sabnzbd2 enable > /dev/null 2>&1
+    /etc/init.d/sabnzbd2 start > /dev/null 2>&1
+else
+    if [ -f "/etc/init.d/sabnzbd2" ]; then
+        update-rc.d sabnzbd2 disable > /dev/null 2>&1
+    fi
+
+    if [ -f "/var/run/sabnzbd/sabnzbd2.pid" ]; then
+        PID=$(cat /var/run/sabnzbd/sabnzbd2.pid);
+        kill -0 $PID 2>/dev/null;
+
+        if [ $? -eq 0 ]; then
+            kill -9 $PID;
+            rm -Rf /var/run/sabnzbd/sabnzbd2.pid > /dev/null 2>&1
+        fi
+    fi
 fi
 
 if [ -f $CONFIG ]; then
@@ -68,6 +347,11 @@ case "$2" in
   getsettings)
     getsettings
     ;;
+  setsettings)
+    setsettings
+    ;;
   *)
-    exit 1
+    exit 0
 esac
+
+exit 0

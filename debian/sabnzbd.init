@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 ### BEGIN INIT INFO
 # Provides:          sabnzbd
@@ -25,7 +25,7 @@ EXTRA_OPTS=""
 RUN_AS="sabnzbd"
 DAEMON="SABnzbd.py"
 APP_PATH="/opt/SABnzbd"
-CONFIG="/home/sabnzbd/.sabnzbd/sabnzbd.ini"
+CONFIG="/var/opt/sabnzbd/sabnzbd.ini"
 HOST="0.0.0.0"
 
 if [ -f "$CONFIG" ]; then
@@ -62,9 +62,9 @@ if [ ! -d $PID_PATH ]; then
 	chown -R $RUN_AS:users $PID_PATH
 fi
 
-if [ ! -d /home/sabnzbd/.sabnzbd ]; then
-    mkdir -p /home/sabnzbd/.sabnzbd
-	chown -R $RUN_AS:users /home/sabnzbd/.sabnzbd
+if [ ! -d /var/opt/sabnzbd ]; then
+    mkdir -p /var/opt/sabnzbd
+	chown -R $RUN_AS:users /var/opt/sabnzbd
 fi
 
 if [ -e $PID_FILE ]; then

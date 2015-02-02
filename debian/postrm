@@ -26,8 +26,8 @@ case "$1" in
             find $OMV_SABNZBD2_DATA_PATH -mindepth 1 -delete
         fi
 
-        if [ -f "/var/run/sabnzbd/pid" ]; then
-            PID=$(cat /var/run/sabnzbd/pid);
+        if [ -f "/var/run/sabnzbd/sabnzbd.pid" ]; then
+            PID=$(cat /var/run/sabnzbd/sabnzbd.pid);
             kill -0 $PID 2>/dev/null;
             if [ $? -eq 0 ]; then
                 kill -9 $PID;
@@ -35,8 +35,8 @@ case "$1" in
             fi
         fi
 
-        if [ -f "/var/run/sabnzbd2/pid" ]; then
-            PID=$(cat /var/run/sabnzbd2/pid);
+        if [ -f "/var/run/sabnzbd/sabnzbd2.pid" ]; then
+            PID=$(cat /var/run/sabnzbd/sabnzbd2.pid);
             kill -0 $PID 2>/dev/null;
             if [ $? -eq 0 ]; then
                 kill -9 $PID;
