@@ -46,6 +46,19 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract implements
         return "Sabnzbd";
     }
 
+    public function applyConfig()
+    {
+        $cmd = sprintf("omv-mkconf %s setsettings 2>&1", $this->getPluginName());
+
+        if (0 !== $this->exec($cmd, $output)) {
+            throw new OMVException(
+                OMVErrorMsg::E_EXEC_FAILED,
+                $cmd,
+                implode("\n", $output)
+            );
+        }
+    }
+
     public function getStatus()
     {
         global $xmlConfig;
@@ -67,18 +80,6 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract implements
             "enabled" => boolval($object["enable"]),
             "running" => $initd->status() == 0
         );
-    }
-
-    public function applyConfig()
-    {
-        $cmd = sprintf("omv-mkconf %s 2>&1", $this->getPluginName());
-        if (0 !== $this->exec($cmd, $output)) {
-            throw new OMVException(
-                OMVErrorMsg::E_EXEC_FAILED,
-                $cmd,
-                implode("\n", $output)
-            );
-        }
     }
 
     public function startService()

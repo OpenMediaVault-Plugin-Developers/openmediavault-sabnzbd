@@ -19,6 +19,7 @@ PID_PATH=`dirname $PID_FILE`
 # script name
 NAME="sabnzbd"
 DESC="SABnzbd"
+
 # startup args
 DAEMON_OPTS="--daemon --pidfile $PID_FILE"
 EXTRA_OPTS=""
@@ -30,7 +31,7 @@ HOST="0.0.0.0"
 
 if [ -f "$CONFIG" ]; then
 	#HOST=`grep -m 1 ^host $CONFIG | cut -d ' ' -f 3` Not needed ?
-    if [ `grep -m 1 ^enable_https $CONFIG | cut -d ' ' -f 3` == "1" ]; then
+    if [ `grep -m 1 ^enable_https $CONFIG | cut -d ' ' -f 3` = "1" ]; then
 		PORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
 	else
 		PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
@@ -70,7 +71,6 @@ fi
 if [ -e $PID_FILE ]; then
     PID=`cat $PID_FILE`
     if ! kill -0 $PID > /dev/null 2>&1; then
-        echo "Removing stale $PID_FILE"
         rm $PID_FILE
     fi
 fi

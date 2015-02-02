@@ -27,8 +27,7 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
     requires: [
         "OMV.data.Model",
         "OMV.data.Store",
-        "OMV.module.admin.service.sabnzbd.Backup",
-        "OMV.module.admin.service.sabnzbd.UpdateSAB"
+        "OMV.module.admin.service.sabnzbd.Backup"
     ],
 
     rpcService   : "Sabnzbd",
