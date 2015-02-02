@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (C) 2013-2014 OpenMediaVault Plugin Developers
+ * Copyright (C) 2013-2015 OpenMediaVault Plugin Developers
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@ require_once "openmediavault/config.inc";
 require_once "openmediavault/error.inc";
 require_once "openmediavault/initscript.inc";
 require_once "openmediavault/module.inc";
-require_once "openmediavault/util.inc";
 
 class OMVModuleSabnzbd extends OMVModuleServiceAbstract implements
     OMVINotifyListener,
@@ -37,7 +36,7 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract implements
         return sprintf("org.openmediavault.service.%s", $this->getPluginName());
     }
 
-    private function getXPath()
+    private function getXpath()
     {
         return sprintf("//services/%s", $this->getPluginName());
     }
@@ -51,12 +50,12 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract implements
     {
         global $xmlConfig;
 
-        $object = $xmlConfig->get($this->getXPath());
+        $object = $xmlConfig->get($this->getXpath());
 
         if (is_null($object)) {
             throw new OMVException(
                 OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
-                $this->getXPath()
+                $this->getXpath()
             );
         }
 
@@ -70,25 +69,44 @@ class OMVModuleSabnzbd extends OMVModuleServiceAbstract implements
         );
     }
 
+    public function applyConfig()
+    {
+        $cmd = sprintf("omv-mkconf %s 2>&1", $this->getPluginName());
+        if (0 !== $this->exec($cmd, $output)) {
+            throw new OMVException(
+                OMVErrorMsg::E_EXEC_FAILED,
+                $cmd,
+                implode("\n", $output)
+            );
+        }
+    }
+
     public function startService()
     {
         global $xmlConfig;
 
-        $object = $xmlConfig->get($this->getXPath());
+        $object = $xmlConfig->get($this->getXpath());
 
         if (is_null($object)) {
             throw new OMVException(
                 OMVErrorMsg::E_CONFIG_GET_OBJECT_FAILED,
-                $this->getXPath()
+                $this->getXpath()
             );
         }
 
-        if (!boolval($object["enable"])) {
+        if (boolval($object["enable"])) {
+
+            $initd = new OMVSysVInitScript($this->getPluginName(), true);
+            $initd->exec();
+        }
+
+        if (!boolval($object["newinstenable"])) {
             return;
         }
 
-        $initd = new OMVSysVInitScript($this->getPluginName(), true);
+        $initd = new OMVSysVInitScript("sabnzbd2", true);
         $initd->exec();
+
     }
 
     public function stopService()

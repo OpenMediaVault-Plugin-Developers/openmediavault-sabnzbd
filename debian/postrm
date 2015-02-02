@@ -5,34 +5,62 @@ set -e
 . /etc/default/openmediavault
 . /usr/share/openmediavault/scripts/helper-functions
 
+OMV_SABNZBD_APP_PATH="/opt/SABnzbd/"
+OMV_SABNZBD1_DATA_PATH="/var/opt/sabnzbd"
+OMV_SABNZBD2_DATA_PATH="/var/opt/sabnzbd2"
+OMV_SABNZBD_XPATH="/config/services/sabnzbd"
+
 case "$1" in
-        purge)
-                rm -Rf /opt/SABnzbd & >/dev/null
-				
-                if [ -f "/var/run/sabnzbd/sabnzbd-8080.pid" ]; then
-                        PID=$(cat /var/run/sabnzbd/sabnzbd-8080.pid);
-                        kill -0 $PID 2>/dev/null;
-                        if [ $? -eq 0 ]; then
-                                kill -9 $PID;
-                                rm -Rf /var/run/sabnzbd
-                        fi
-                fi
+    purge)
+        omv_config_delete OMV_SABNZBD_XPATH
+
+        if [ -d $OMV_SABNZBD_APP_PATH ]; then
+            find $OMV_SABNZBD_APP_PATH -mindepth 1 -delete
+        fi
+
+        if [ -d $OMV_SABNZBD1_DATA_PATH ]; then
+            find $OMV_SABNZBD1_DATA_PATH -mindepth 1 -delete
+        fi
+
+        if [ -d $OMV_SABNZBD2_DATA_PATH ]; then
+            find $OMV_SABNZBD2_DATA_PATH -mindepth 1 -delete
+        fi
+
+        if [ -f "/var/run/sabnzbd/pid" ]; then
+            PID=$(cat /var/run/sabnzbd/pid);
+            kill -0 $PID 2>/dev/null;
+            if [ $? -eq 0 ]; then
+                kill -9 $PID;
+                rm -Rf /var/run/sabnzbd
+            fi
+        fi
+
+        if [ -f "/var/run/sabnzbd2/pid" ]; then
+            PID=$(cat /var/run/sabnzbd2/pid);
+            kill -0 $PID 2>/dev/null;
+            if [ $? -eq 0 ]; then
+                kill -9 $PID;
+                rm -Rf /var/run/sabnzbd2
+            fi
+        fi
                 
-                omv_config_delete "//services/sabnzbd"
-                userdel -r sabnzbd
-                if [ ! -d /opt ]; then
-                    mkdir /opt
-                    chmod 775 /opt
-                fi
-        ;;
+        if getent passwd sabnzbd >/dev/null 2>&1; then
+            userdel -rf sabnzbd
+        fi
+
+        if [ ! -d /opt ]; then
+            mkdir /opt
+            chmod 775 /opt
+        fi
+    ;;
 
         remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
-        ;;
+    ;;
 
-        *)
+    *)
         echo "postrm called with unknown argument '$1'" >&2
         exit 1
-        ;;
+    ;;
 esac
 
 exit 0

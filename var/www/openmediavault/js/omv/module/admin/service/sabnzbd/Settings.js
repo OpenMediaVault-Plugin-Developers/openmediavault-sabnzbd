@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 OpenMediaVault Plugin Developers
+ * Copyright (C) 2013-2015 OpenMediaVault Plugin Developers
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,40 +20,41 @@
 // require("js/omv/data/Store.js")
 // require("js/omv/data/Model.js")
 // require("js/omv/form/plugin/LinkedFields.js")
+// require("js/omv/module/admin/service/sabnzbd/Backup.js")
 
 Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
-    extend : "OMV.workspace.form.Panel",
-    uses   : [
+    extend: "OMV.workspace.form.Panel",
+    requires: [
         "OMV.data.Model",
         "OMV.data.Store",
+        "OMV.module.admin.service.sabnzbd.Backup",
         "OMV.module.admin.service.sabnzbd.UpdateSAB"
     ],
 
-    initComponent : function () {
-        var me = this;
+    rpcService   : "Sabnzbd",
+    rpcGetMethod : "getSettings",
+    rpcSetMethod : "setSettings",
 
-        me.on('load', function () {
-            var checked = me.findField('enable').checked;
-            var showtab = me.findField('showtab').checked;
-            var parent = me.up('tabpanel');
+    initComponent: function() {
+        this.on("load", function() {
+            var checked = this.findField("enable").checked;
+            var showtab = this.findField("showtab").checked;
+            var parent = this.up("tabpanel");
 
-            if (!parent)
+            if (!parent) {
                 return;
+            }
 
-            var managementPanel = parent.down('panel[title=' + _("Web Interface") + ']');
+            var managementPanel = parent.down("panel[title=" + _("Web Interface") + "]");
 
             if (managementPanel) {
                 checked ? managementPanel.enable() : managementPanel.disable();
                 showtab ? managementPanel.tab.show() : managementPanel.tab.hide();
             }
-        });
+        }, this);
 
-        me.callParent(arguments);
+        this.callParent(arguments);
     },
-
-    rpcService   : "Sabnzbd",
-    rpcGetMethod : "getSettings",
-    rpcSetMethod : "setSettings",
 
     plugins      : [{
         ptype        : "linkedfields",
@@ -75,8 +76,87 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
                 "port",
             ],
             properties : "!show"
+        },{ 
+            name       : [ 
+                "newinstenable",
+            ], 
+            conditions : [ 
+                { name  : "newinstance", value : false }
+            ],
+            properties : "!show"
         }]
     }],
+
+    getButtonItems: function() {
+        var items = this.callParent(arguments);
+
+        items.push({
+            id: this.getId() + "-show",
+            xtype: "button",
+            text: _("Open Web Client"),
+            icon: "images/sabnzbd.png",
+            iconCls: Ext.baseCSSPrefix + "btn-icon-16x16",
+            scope: this,
+            handler: function() {
+                var proxy = this.getForm().findField("ppass").getValue();
+                if (proxy == true) {
+                    var link = "http://" + location.hostname + "/sabnzbd/";
+                } else {
+                    var port = this.getForm().findField("port").getValue();
+                    var link = "http://" + location.hostname + ":" + port;
+                }
+                window.open(link, "_blank");
+            }
+        },{
+            id: this.getId() + "-update",
+            xtype: "button",
+            name: "updatesab",
+            text: _("Update available"),
+            icon: "images/sabnzbd.png",
+            iconCls: Ext.baseCSSPrefix + "btn-icon-16x16",
+            scope: this,
+            handler : function() {
+                var me = this;
+                OMV.MessageBox.show({
+                    title   : _("Confirmation"),
+                    msg     : _("Are you sure you want to update SABnzbd?"),
+                    buttons : Ext.Msg.YESNO,
+                    fn      : function(answer) {
+                        if (answer !== "yes")
+                           return;
+                       OMV.Rpc.request({
+                           scope   : me,
+                           rpcData : {
+                                service : "Sabnzbd",
+                                method  : "doUpdateSAB",
+                                params  : {
+                                    update   : 0
+                                }
+                            },
+                            success : function(id, success, response) {
+                                me.doReload();
+                                OMV.MessageBox.hide();
+                            }
+                        });
+                    },
+                    scope : me,
+                    icon  : Ext.Msg.QUESTION
+                });
+            }
+        }, {
+            id: this.getId() + "-backup",
+            xtype: "button",
+            text: _("Backup/restore"),
+            icon: "images/wrench.png",
+            iconCls: Ext.baseCSSPrefix + "btn-icon-16x16",
+            scope: this,
+            handler: function() {
+                Ext.create("OMV.module.admin.service.sabnzbd.Backup").show();
+            }
+        });
+
+        return items;
+    },
 
     getFormItems : function() {
         var me = this;
@@ -99,6 +179,18 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
                 boxLabel   : _("Show tab containing SABnzbd web interface frame."),
                 checked    : false
             },{
+                xtype      : "checkbox",
+                name       : "ssl",
+                fieldLabel : _("SSL"),
+                boxLabel   : _("Auto enable SSL."),
+                checked    : false
+            },{
+                xtype      : "checkbox",
+                name       : "ppass",
+                fieldLabel : _("Proxy Pass"),
+                boxLabel   : _("Enable this to access via OMV_IP/sabnzbd"),
+                checked    : false
+            },{
                 xtype: "numberfield",
                 name: "port",
                 fieldLabel: _("Port"),
@@ -108,160 +200,30 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
                 allowDecimals: false,
                 allowBlank: false,
                 value: 8080
+            }]
+        },{
+            xtype    : "fieldset",
+            title    : "Second version",
+            defaults : {
+                labelSeparator : ""
+            },
+            items : [{
+                xtype      : "checkbox",
+                name       : "newinstance",
+                fieldLabel : _("Enable"),
+                boxLabel   : _("Will create second configuration. Unticking will remove everything."),
+                checked    : false
             },{
-                xtype   : "button",
-                name    : "opensabnzbd",
-                text    : _("SABnzbd Web Interface"),
-                scope   : this,
-                handler : function() {
-                    var me = this;
-                    var port = me.getForm().findField("port").getValue();
-                    var link = "http://" + location.hostname + ":" + port + "/";
-                    window.open(link, "_blank");
-                },
-                margin : "0 0 5 0"
+                xtype      : "checkbox",
+                name       : "newinstenable",
+                fieldLabel : _("Run"),
+                boxLabel   : _("Will run the second instance of SABnzbd. Use to start/stop the second service."),
+                checked    : false
             },{
                 xtype   : "checkbox",
                 name    : "update"
-            },{
-                xtype   : "button",
-                name    : "updatesab",
-                text    : _("Update SABnzbd"),
-                scope   : this,
-                handler : function() {
-                    var me = this;
-                    OMV.MessageBox.show({
-                        title   : _("Confirmation"),
-                        msg     : _("Are you sure you want to update SABnzbd?"),
-                        buttons : Ext.Msg.YESNO,
-                        fn      : function(answer) {
-                            if (answer !== "yes")
-                               return;
-                            // throw new OMVException(OMVErrorMsg::E_MISC_FAILURE, "You CAN NOT use this branch with this repository.");
-
-                            OMV.Rpc.request({
-                                scope   : me,
-                                rpcData : {
-                                    service : "Sabnzbd",
-                                    method  : "doUpdateSAB",
-                                    params  : {
-                                        update   : 0
-                                    }
-                                },
-                                success : function(id, success, response) {
-                                    me.doReload();
-                                    OMV.MessageBox.hide();
-                                }
-                            });
-                        },
-                        scope : me,
-                        icon  : Ext.Msg.QUESTION
-                    });
-                }
-            },{
-                border: false,
-                html: "<br />"
-            }]
-                },{
-                        xtype: "fieldset",
-                        title: _("Backup User Settings"),
-                        fieldDefaults: {
-                                labelSeparator: ""
-                        },
-                        items : [{
-                xtype         : "combo",
-                name          : "mntentref",
-                fieldLabel    : _("Volume"),
-                emptyText     : _("Select a volume ..."),
-                allowBlank    : false,
-                allowNone     : false,
-                editable      : false,
-                triggerAction : "all",
-                displayField  : "description",
-                valueField    : "uuid",
-                store         : Ext.create("OMV.data.Store", {
-                    autoLoad : true,
-                    model    : OMV.data.Model.createImplicit({
-                        idProperty : "uuid",
-                        fields     : [
-                            { name : "uuid", type : "string" },
-                            { name : "devicefile", type : "string" },
-                            { name : "description", type : "string" }
-                        ]
-                    }),
-                    proxy : {
-                        type : "rpc",
-                        rpcData : {
-                            service : "ShareMgmt",
-                            method  : "getCandidates"
-                        },
-                        appendSortParams : false
-                    },
-                    sorters : [{
-                        direction : "ASC",
-                        property  : "devicefile"
-                    }]
-                })
-            },{
-                xtype      : "textfield",
-                name       : "path",
-                fieldLabel : _("Path"),
-                allowNone  : true,
-                readOnly   : true
-            },{
-                xtype   : "button",
-                name    : "backup",
-                text    : _("Backup"),
-                scope   : this,
-                handler : Ext.Function.bind(me.onBackupButton, me, [ me ]),
-                margin  : "5 0 0 0"
-            },{
-                border : false,
-                html   : "<ul><li>" + _("Backup settings to a data drive.") + "</li></ul>"
-            },{
-                xtype   : "button",
-                name    : "restore",
-                text    : _("Restore"),
-                scope   : this,
-                handler : Ext.Function.bind(me.onRestoreButton, me, [ me ]),
-                margin  : "5 0 0 0"
-            },{
-                border : false,
-                html   : "<ul><li>" + _("Restore settings from a data drive.") + "</li></ul>"
             }]
         }];
-    },
-	
-	onBackupButton: function() {
-        var me = this;
-        me.doSubmit();
-        Ext.create("OMV.window.Execute", {
-            title      : _("Backup"),
-            rpcService : "Sabnzbd",
-            rpcMethod  : "doBackup",
-            listeners  : {
-                scope     : me,
-                exception : function(wnd, error) {
-                    OMV.MessageBox.error(null, error);
-                }
-            }
-        }).show();
-    },
-
-	onRestoreButton: function() {
-        var me = this;
-        me.doSubmit();
-        Ext.create("OMV.window.Execute", {
-            title      : _("Restore"),
-            rpcService : "Sabnzbd",
-            rpcMethod  : "doRestore",
-            listeners  : {
-                scope     : me,
-                exception : function(wnd, error) {
-                    OMV.MessageBox.error(null, error);
-                }
-            }
-        }).show();
     }
 });
 

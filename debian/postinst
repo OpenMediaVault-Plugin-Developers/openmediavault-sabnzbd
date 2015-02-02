@@ -5,31 +5,44 @@ set -e
 . /etc/default/openmediavault
 . /usr/share/openmediavault/scripts/helper-functions
 
+OMV_SABNZBD_APP_PATH="/opt/sabnzbd"
+OMV_SABNZBD1_OLD_DATA_PATH="/home/sabnzbd/.sabnzbd"
+OMV_SABNZBD2_OLD_DATA_PATH="/home/sabnzbd/.sabnzbd2"
+OMV_SABNZBD1_DATA_PATH="/var/opt/sabnzbd"
+OMV_SABNZBD2_DATA_PATH="/var/opt/sabnzbd2"
+OMV_SABNZBD_USER="sabnzbd"
+OMV_SABNZBD_GROUP="users"
+
 case "$1" in
     configure)
+        SERVICE_XPATH_NAME="sabnzbd"
+        SERVICE_XPATH="/config/services/${SERVICE_XPATH_NAME}"
+
         if ! getent passwd sabnzbd >/dev/null 2>&1; then
             echo "Adding sabnzbd user..."
-            useradd --create-home --groups users --no-user-group --shell /usr/sbin/nologin sabnzbd
-            insserv -d sabnzbd
+            adduser --quiet \
+                    --system \
+                    --ingroup $OMV_SABNZBD_GROUP \
+                    --no-create-home \
+                    --disabled-password \
+                    $OMV_SABNZBD_USER
         else
             echo "sabnzbd user already exists."
         fi
 
-        if [ -f "/var/run/sabnzbd/sabnzbd.pid" ]; then
-            PID=$(cat /var/run/sabnzbd/sabnzbd.pid);
-            kill -0 $PID 2>/dev/null;
-            if [ $? -eq 0 ]; then
-                kill -9 $PID;
-                rm -Rf /var/run/sabnzbd
-            fi
+        if [ -e $OMV_SABNZBD1_OLD_DATA_PATH ]; then
+            cp -Ra $OMV_SABNZBD1_OLD_DATA_PATH/* $OMV_SABNZBD1_DATA_PATH
+			rm -Rf OMV_SABNZBD1_OLD_DATA_PATH
         fi
 
-        chmod 775 /opt
-        chown root:users /opt
-	
+        if [ -e $OMV_SABNZBD2_OLD_DATA_PATH ]; then
+            mv $OMV_SABNZBD2_OLD_DATA_PATH $OMV_SABNZBD2_DATA_PATH
+            chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GGOUP $OMV_SABNZBD2_DATA_PATH -R
+        fi
+
         STABLE=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
     	
-        if [ ! -d /opt/SABnzbd ]; then        
+        if [ ! -f /opt/SABnzbd/SABnzbd.py ]; then        
             wget -q -nv http://downloads.sourceforge.net/project/sabnzbdplus/sabnzbdplus/${STABLE}/SABnzbd-${STABLE}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
             tar xzf /tmp/sabnzbdplus.tar.gz -C /tmp/
             cp -fRa /tmp/SABnzbd-${STABLE}/. /opt/SABnzbd/
@@ -37,26 +50,25 @@ case "$1" in
             rm -fR /tmp/SABnzbd-${STABLE}
         fi
 	
-        if ! omv_config_exists "/config/services/sabnzbd"; then
+        if ! omv_config_exists "${SERVICE_XPATH}"; then
             echo "Initial configuration."
-            object="<enable>0</enable>"
-            object="${object}<showtab>0</showtab>"
-            object="${object}<update>0</update>"
-            omv_config_add_element "/config/services" "sabnzbd" "${object}" true
+            omv_config_add_element "${SERVICE_XPATH}" "enable" "0"
+            omv_config_add_element "${SERVICE_XPATH}" "ssl" "0"
+            omv_config_add_element "${SERVICE_XPATH}" "ppass" "0"
+            omv_config_add_element "${SERVICE_XPATH}" "showtab" "0"
+            omv_config_add_element "${SERVICE_XPATH}" "update" "0"
         fi
 
-        chown -R sabnzbd:users /opt/SABnzbd
-        chown -R sabnzbd:users /etc/init.d/sabnzbd
-        chmod 775 /opt/SABnzbd -R
-        
-        omv_install_fixperms
 
+
+        chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GROUP $OMV_SABNZBD_APP_PATH
+        chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GGOUP $OMV_SABNZBD1_DATA_PATH -R
+        chmod 775 $OMV_SABNZBD_APP_PATH -R
+        
         # Activate package triggers. These triggers are only set during the
         # package installation.
         dpkg-trigger update-fixperms
         dpkg-trigger update-locale
-
-        #update-rc.d sabnzbd disable
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

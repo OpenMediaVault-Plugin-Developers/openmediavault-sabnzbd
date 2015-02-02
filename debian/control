@@ -13,4 +13,8 @@ Depends: ${misc:Depends}, openmediavault (>= 0.6), python, git,
  par2, python-openssl, python-yenc, unzip, python-support,
  unrar
 Description: OpenMediaVault SABnzbd plugin
- SABnzbd is an Open Source Binary Newsreader written in Python.
+ SABnzbd is a web-based binary newsgrabber written in Python, with support for
+ the popular nzb file format. It greatly simplifies the process of downloading
+ from usenet, thanks to a friendly web-based, fully customizable user interface
+ and advanced built-in post-processing options including the ability to
+ automatically verify, repair, extract and clean up downloaded posts. 
