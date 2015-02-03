@@ -117,6 +117,7 @@ PID_PATH=`dirname $PID_FILE`
 # script name
 NAME="sabnzbd2"
 DESC="SABnzbd2"
+
 # startup args
 DAEMON_OPTS="--daemon --pidfile $PID_FILE"
 EXTRA_OPTS=""
@@ -126,8 +127,7 @@ APP_PATH="/opt/SABnzbd"
 CONFIG="/var/opt/sabnzbd2/sabnzbd.ini"
 HOST="0.0.0.0"
 
-if [ -f $CONFIG ]; then
-    HOST=`grep -m 1 host $CONFIG | cut -d ' ' -f 3`
+if [ -f "$CONFIG" ]; then
     HTTPS=`grep -m 1 ^enable_https "${CONFIG}" | cut -d ' ' -f 3`
     if [ "$HTTPS" = "1" ]; then
         PORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
@@ -135,15 +135,15 @@ if [ -f $CONFIG ]; then
         PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
     fi
 else
-    PORT="8080"
+	PORT="8080"
 fi
 ############### END EDIT ME ##################
 
 test -x $APP_PATH/$DAEMON || exit 0
 
 [ -r /etc/default/locale ] && {
-    . /etc/default/locale;
-    [ -n "$LANG" ] && export LANG;
+	. /etc/default/locale;
+	[ -n "$LANG" ] && export LANG;
 }
 
 
@@ -158,18 +158,17 @@ set -e
 
 if [ ! -d $PID_PATH ]; then
     mkdir -p $PID_PATH
-    chown -R $RUN_AS:users $PID_PATH
+	chown -R $RUN_AS:users $PID_PATH
 fi
 
-if [ ! -d /var/opt/sabnzbd2 ]; then
-    mkdir -p /var/opt/sabnzbd2
-    chown -R $RUN_AS:users /var/opt/sabnzbd2
+if [ ! -d /var/opt/sabnzbd ]; then
+    mkdir -p /var/opt/sabnzbd
+	chown -R $RUN_AS:users /var/opt/sabnzbd
 fi
 
 if [ -e $PID_FILE ]; then
     PID=`cat $PID_FILE`
     if ! kill -0 $PID > /dev/null 2>&1; then
-        echo "Removing stale $PID_FILE"
         rm $PID_FILE
     fi
 fi
@@ -177,7 +176,7 @@ fi
 load_settings()
 {
     HOST="0.0.0.0"
-    #Set SABnzbd address here.
+	#Set SABnzbd address here.
     EXTRAOPTS=""
     OPTIONS="$DAEMON_OPTS"
     OPTIONS="$OPTIONS --config-file $CONFIG $EXTRA_OPTS"
@@ -197,8 +196,8 @@ is_running()
 
 case "$1" in
     start)
-        echo "Starting $DESC"
         load_settings;
+        echo "Starting $DESC"
         cd $APP_PATH
         eval start-stop-daemon -d $APP_PATH -c $RUN_AS --start --exec $DAEMON -- $OPTIONS
         ;;
