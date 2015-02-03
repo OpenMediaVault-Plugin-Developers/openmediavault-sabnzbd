@@ -12,7 +12,7 @@ OMV_SABNZBD_XPATH="/config/services/sabnzbd"
 
 case "$1" in
     purge)
-        omv_config_delete OMV_SABNZBD_XPATH
+        omv_config_delete $OMV_SABNZBD_XPATH
 
         if [ -d $OMV_SABNZBD_APP_PATH ]; then
             rm -Rf $OMV_SABNZBD_APP_PATH
@@ -31,7 +31,6 @@ case "$1" in
             kill -0 $PID 2>/dev/null;
             if [ $? -eq 0 ]; then
                 kill -9 $PID;
-                rm -Rf /var/run/sabnzbd
             fi
         fi
 
@@ -40,16 +39,24 @@ case "$1" in
             kill -0 $PID 2>/dev/null;
             if [ $? -eq 0 ]; then
                 kill -9 $PID;
-                rm -Rf /var/run/sabnzbd2
             fi
         fi
-                
+
+        if [ -d "/var/run/sabnzbd" ]; then
+            rm -Rf /var/run/sabnzbd >/dev/null 2>&1
+        fi
+
         if getent passwd sabnzbd >/dev/null 2>&1; then
             userdel -rf sabnzbd
         fi
 
         if [ ! -d /opt ]; then
             mkdir /opt
+            chmod 775 /opt
+        fi
+
+        if [ ! -d /var/opt ]; then
+            mkdir /var/opt
             chmod 775 /opt
         fi
     ;;

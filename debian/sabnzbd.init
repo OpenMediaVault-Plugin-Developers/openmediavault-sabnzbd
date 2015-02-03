@@ -30,14 +30,14 @@ CONFIG="/var/opt/sabnzbd/sabnzbd.ini"
 HOST="0.0.0.0"
 
 if [ -f "$CONFIG" ]; then
+    PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
     HTTPS=`grep -m 1 ^enable_https "${CONFIG}" | cut -d ' ' -f 3`
     if [ "$HTTPS" = "1" ]; then
-        PORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
-    else
-        PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
+        HTTPSPORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
+        DAEMON_OPTS="--daemon --pidfile $PID_FILE --https $HTTPSPORT"
     fi
 else
-	PORT="8080"
+    PORT="8080"
 fi
 ############### END EDIT ME ##################
 

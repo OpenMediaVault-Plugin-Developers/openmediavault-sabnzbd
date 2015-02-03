@@ -10,6 +10,10 @@ CONFIG="/var/opt/sabnzbd/sabnzbd.ini"
 update() {
 service sabnzbd stop
 
+if [ -f "/etc/init.d/sabnzbd2" ]; then
+    /etc/init.d/sabnzbd2 stop
+fi
+
 ver1=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
 if [ "$ver1" = "" ]; then
     exit
@@ -35,13 +39,12 @@ else
     xmlstarlet ed -L -u "//services/sabnzbd/update" -v 1 -n $OMV_CONFIG_FILE
 fi
 
-if [ -f $CONFIG ]; then
-    HOST=`grep -m 1 host $CONFIG | cut -d ' ' -f 3`
+if [ -f "$CONFIG" ]; then
+    PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
     HTTPS=`grep -m 1 ^enable_https "${CONFIG}" | cut -d ' ' -f 3`
     if [ "$HTTPS" = "1" ]; then
-        PORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
-    else
-        PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
+        HTTPSPORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
+        DAEMON_OPTS="--daemon --pidfile $PID_FILE --https $HTTPSPORT"
     fi
 else
     PORT="8080"
@@ -51,6 +54,10 @@ xmlstarlet ed -L -u "//services/sabnzbd/port" -v $PORT -n $OMV_CONFIG_FILE
 }
 
 setsettings() {
+if [ -f "/etc/init.d/sabnzbd2" ]; then
+    /etc/init.d/sabnzbd2 stop
+fi
+
 OMV_SABNZBD1_DATA_PATH=${DATA1-/var/opt/sabnzbd}
 OMV_SABNZBD1_DATA_CONFIG="${OMV_SABNZBD1_DATA_PATH}/sabnzbd.ini"
 OMV_SABNZBD2_DATA_PATH=${DATA2-/var/opt/sabnzbd2}
@@ -91,6 +98,9 @@ host = 0.0.0.0
 enable_https = 0' > $OMV_SABNZBD1_DATA_CONFIG
     chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GROUP $OMV_SABNZBD1_DATA_CONFIG
     chmod 775 $OMV_SABNZBD1_DATA_CONFIG
+else
+    sed -i '0,/^port.*/{s/^port.*/port = 8080/}' $OMV_SABNZBD1_DATA_CONFIG
+    sed -i '0,/^https_port.*/{s/^https_port.*/https_port = 9080/}' $OMV_SABNZBD1_DATA_CONFIG
 fi
 
 if [ "${newinstance}" = "1" ]; then
@@ -128,14 +138,14 @@ CONFIG="/var/opt/sabnzbd2/sabnzbd.ini"
 HOST="0.0.0.0"
 
 if [ -f "$CONFIG" ]; then
+    PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
     HTTPS=`grep -m 1 ^enable_https "${CONFIG}" | cut -d ' ' -f 3`
     if [ "$HTTPS" = "1" ]; then
-        PORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
-    else
-        PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
+        HTTPSPORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
+        DAEMON_OPTS="--daemon --pidfile $PID_FILE --https $HTTPSPORT"
     fi
 else
-	PORT="8080"
+    PORT="8090"
 fi
 ############### END EDIT ME ##################
 
@@ -257,8 +267,8 @@ enable_https = 0' > $OMV_SABNZBD2_DATA_CONFIG
             chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GROUP $OMV_SABNZBD2_DATA_CONFIG
             chmod 775 $OMV_SABNZBD2_DATA_CONFIG
         else
-            sed -i 's/^port = 8080/port = 8090/' $OMV_SABNZBD2_DATA_CONFIG
-            sed -i 's/^https_port.*/https_port = 9090/' $OMV_SABNZBD2_DATA_CONFIG
+            sed -i '0,/^port.*/{s/^port.*/port = 8090/}' $OMV_SABNZBD2_DATA_CONFIG
+            sed -i '0,/^https_port.*/{s/^https_port.*/https_port = 9090/}' $OMV_SABNZBD2_DATA_CONFIG
         fi
     fi
 else
@@ -285,19 +295,19 @@ fi
 
 if [ "${ssl}" = "1" ]; then
     if [ -f $OMV_SABNZBD1_DATA_CONFIG ]; then
-        sed -i 's/^enable_https.*/enable_https = 1/' $OMV_SABNZBD1_DATA_CONFIG
+        sed -i '0,/^enable_https.*/{s/^enable_https.*/enable_https = 1/}' $OMV_SABNZBD1_DATA_CONFIG
     fi
 
     if [ -f $OMV_SABNZBD2_DATA_CONFIG ]; then
-        sed -i 's/^enable_https.*/enable_https = 1/' $OMV_SABNZBD2_DATA_CONFIG
+        sed -i '0,/^enable_https.*/{s/^enable_https.*/enable_https = 1/}' $OMV_SABNZBD2_DATA_CONFIG
     fi
 else
     if [ -f $OMV_SABNZBD1_DATA_CONFIG ]; then
-        sed -i 's/^enable_https.*/enable_https = 0/' $OMV_SABNZBD1_DATA_CONFIG
+        sed -i '0,/^enable_https.*/{s/^enable_https.*/enable_https = 0/}' $OMV_SABNZBD1_DATA_CONFIG
     fi
 
     if [ -f $OMV_SABNZBD2_DATA_CONFIG ]; then
-        sed -i 's/^enable_https.*/enable_https = 0/' $OMV_SABNZBD2_DATA_CONFIG
+        sed -i '0,/^enable_https.*/{s/^enable_https.*/enable_https = 0/}' $OMV_SABNZBD2_DATA_CONFIG
     fi
 fi
 
@@ -362,16 +372,15 @@ else
     fi
 fi
 
-if [ -f $CONFIG ]; then
-    HOST=`grep -m 1 host $CONFIG | cut -d ' ' -f 3`
+if [ -f "$CONFIG" ]; then
+    PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
     HTTPS=`grep -m 1 ^enable_https "${CONFIG}" | cut -d ' ' -f 3`
     if [ "$HTTPS" = "1" ]; then
-        PORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
-    else
-        PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
+        HTTPSPORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
+        DAEMON_OPTS="--daemon --pidfile $PID_FILE --https $HTTPSPORT"
     fi
 else
-	PORT="8080"
+    PORT="8080"
 fi
 
 xmlstarlet ed -L -u "//services/sabnzbd/port" -v $PORT -n $OMV_CONFIG_FILE
@@ -388,7 +397,7 @@ case "$2" in
     setsettings
     ;;
   *)
-    exit 1
+    exit 0
 esac
 
 exit 0
