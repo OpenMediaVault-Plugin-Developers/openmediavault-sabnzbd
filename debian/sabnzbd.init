@@ -30,12 +30,12 @@ CONFIG="/var/opt/sabnzbd/sabnzbd.ini"
 HOST="0.0.0.0"
 
 if [ -f "$CONFIG" ]; then
-	#HOST=`grep -m 1 ^host $CONFIG | cut -d ' ' -f 3` Not needed ?
-    if [ `grep -m 1 ^enable_https $CONFIG | cut -d ' ' -f 3` = "1" ]; then
-		PORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
-	else
-		PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
-	fi
+    HTTPS=`grep -m 1 ^enable_https "${CONFIG}" | cut -d ' ' -f 3`
+    if [ "$HTTPS" = "1" ]; then
+        PORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
+    else
+        PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
+    fi
 else
 	PORT="8080"
 fi
@@ -98,8 +98,8 @@ is_running()
 
 case "$1" in
     start)
-        echo "Starting $DESC"
         load_settings;
+        echo "Starting $DESC"
         cd $APP_PATH
         eval start-stop-daemon -d $APP_PATH -c $RUN_AS --start --exec $DAEMON -- $OPTIONS
         ;;

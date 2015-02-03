@@ -30,30 +30,31 @@ ver2=`cat /opt/SABnzbd/sabnzbd/version.py | grep '__version__ = ' | sed 's/__ver
 
 #ver2=0.7.00 #use to test if button shows if values do not match
 if [ "$ver1" = "$ver2" ]; then
-    xmlstarlet ed -L -u "//services/sabnzbd/update" -v 0 -n ${OMV_CONFIG_FILE}
+    xmlstarlet ed -L -u "//services/sabnzbd/update" -v 0 -n $OMV_CONFIG_FILE
 else
-    xmlstarlet ed -L -u "//services/sabnzbd/update" -v 1 -n ${OMV_CONFIG_FILE}
+    xmlstarlet ed -L -u "//services/sabnzbd/update" -v 1 -n $OMV_CONFIG_FILE
 fi
 
 if [ -f $CONFIG ]; then
-	HOST=`grep -m 1 host $CONFIG | cut -d ' ' -f 3`
-    if [ `grep -m 1 enable_https $CONFIG | cut -d ' ' -f 3` = "1" ]; then
-		PORT=`grep -m1 https_port $CONFIG | cut -d ' ' -f 3`
-	else
-		PORT=`grep -m2 port $CONFIG | tail -n1 | cut -d ' ' -f 3`
-	fi
+    HOST=`grep -m 1 host $CONFIG | cut -d ' ' -f 3`
+    HTTPS=`grep -m 1 ^enable_https "${CONFIG}" | cut -d ' ' -f 3`
+    if [ "$HTTPS" = "1" ]; then
+        PORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
+    else
+        PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
+    fi
 else
-	PORT="8080"
+    PORT="8080"
 fi
 
-xmlstarlet ed -L -u "//services/sabnzbd/port" -v $PORT -n ${OMV_CONFIG_FILE}
+xmlstarlet ed -L -u "//services/sabnzbd/port" -v $PORT -n $OMV_CONFIG_FILE
 }
 
 setsettings() {
-OMV_SABNZBD1_DATA_PATH=${DATA-/var/opt/sickbeard}
+OMV_SABNZBD1_DATA_PATH=${DATA1-/var/opt/sabnzbd}
 OMV_SABNZBD1_DATA_CONFIG="${OMV_SABNZBD1_DATA_PATH}/sabnzbd.ini"
 OMV_SABNZBD2_DATA_PATH=${DATA2-/var/opt/sabnzbd2}
-OMV_SABNZBD2_DATA_CONFIG="${SABNZBD2_DATA_PATH}/sabnzbd.ini"
+OMV_SABNZBD2_DATA_CONFIG="${OMV_SABNZBD2_DATA_PATH}/sabnzbd.ini"
 OMV_SABNZBD_USER=${USER-sabnzbd}
 OMV_SABNZBD_GROUP=${GROUP-users}
 OMV_SABNZBD_XPATH="/config/services/sabnzbd"
@@ -67,9 +68,29 @@ ver2=`cat /opt/SABnzbd/sabnzbd/version.py | grep '__version__ = ' | sed 's/__ver
 
 #ver2=0.7.00 #use to test if button shows if values do not match
 if [ "$ver1" = "$ver2" ]; then
-    xmlstarlet ed -L -u "//services/sabnzbd/update" -v 0 -n ${OMV_CONFIG_FILE}
+    xmlstarlet ed -L -u "//services/sabnzbd/update" -v 0 -n $OMV_CONFIG_FILE
 else
-    xmlstarlet ed -L -u "//services/sabnzbd/update" -v 1 -n ${OMV_CONFIG_FILE}
+    xmlstarlet ed -L -u "//services/sabnzbd/update" -v 1 -n $OMV_CONFIG_FILE
+fi
+
+if [ ! -d $OMV_SABNZBD1_DATA_PATH ]; then
+    mkdir -p $OMV_SABNZBD1_DATA_PATH
+    chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GROUP $OMV_SABNZBD1_DATA_PATH
+fi
+
+if [ ! -f $OMV_SABNZBD1_DATA_CONFIG ]; then
+    echo '__version__ = 19
+[misc]
+https_port = 9080
+https_cert = server.cert
+https_key = server.key
+https_chain = ""
+port = 8080
+ssl_type = v23
+host = 0.0.0.0
+enable_https = 0' > $OMV_SABNZBD1_DATA_CONFIG
+    chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GROUP $OMV_SABNZBD1_DATA_CONFIG
+    chmod 775 $OMV_SABNZBD1_DATA_CONFIG
 fi
 
 if [ "${newinstance}" = "1" ]; then
@@ -105,23 +126,24 @@ APP_PATH="/opt/SABnzbd"
 CONFIG="/var/opt/sabnzbd2/sabnzbd.ini"
 HOST="0.0.0.0"
 
-if [ -f "$CONFIG" ]; then
-	#HOST=`grep -m 1 ^host $CONFIG | cut -d ' ' -f 3` Not needed ?
-    if [ `grep -m 1 ^enable_https $CONFIG | cut -d ' ' -f 3` = "1" ]; then
-		PORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
-	else
-		PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
-	fi
+if [ -f $CONFIG ]; then
+    HOST=`grep -m 1 host $CONFIG | cut -d ' ' -f 3`
+    HTTPS=`grep -m 1 ^enable_https "${CONFIG}" | cut -d ' ' -f 3`
+    if [ "$HTTPS" = "1" ]; then
+        PORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
+    else
+        PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
+    fi
 else
-	PORT="8080"
+    PORT="8080"
 fi
 ############### END EDIT ME ##################
 
 test -x $APP_PATH/$DAEMON || exit 0
 
 [ -r /etc/default/locale ] && {
-	. /etc/default/locale;
-	[ -n "$LANG" ] && export LANG;
+    . /etc/default/locale;
+    [ -n "$LANG" ] && export LANG;
 }
 
 
@@ -136,12 +158,12 @@ set -e
 
 if [ ! -d $PID_PATH ]; then
     mkdir -p $PID_PATH
-	chown -R $RUN_AS:users $PID_PATH
+    chown -R $RUN_AS:users $PID_PATH
 fi
 
 if [ ! -d /var/opt/sabnzbd2 ]; then
     mkdir -p /var/opt/sabnzbd2
-	chown -R $RUN_AS:users /var/opt/sabnzbd2
+    chown -R $RUN_AS:users /var/opt/sabnzbd2
 fi
 
 if [ -e $PID_FILE ]; then
@@ -155,7 +177,7 @@ fi
 load_settings()
 {
     HOST="0.0.0.0"
-	#Set SABnzbd address here.
+    #Set SABnzbd address here.
     EXTRAOPTS=""
     OPTIONS="$DAEMON_OPTS"
     OPTIONS="$OPTIONS --config-file $CONFIG $EXTRA_OPTS"
@@ -233,7 +255,7 @@ port = 8090
 ssl_type = v23
 host = 0.0.0.0
 enable_https = 0' > $OMV_SABNZBD2_DATA_CONFIG
-            chown $OMV_SABNZBD2_USER:$OMV_SABNZBD2_GROUP $OMV_SABNZBD2_DATA_CONFIG
+            chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GROUP $OMV_SABNZBD2_DATA_CONFIG
             chmod 775 $OMV_SABNZBD2_DATA_CONFIG
         else
             sed -i 's/^port = 8080/port = 8090/' $OMV_SABNZBD2_DATA_CONFIG
@@ -243,18 +265,22 @@ enable_https = 0' > $OMV_SABNZBD2_DATA_CONFIG
 else
     if  [ -f "/etc/init.d/sabnzbd2" ]; then
         update-rc.d sabnzbd2 disable > /dev/null 2>&1
-        if [ -f "/var/run/sabnzbd/sabnzbd2.pid" ]; then
-            PID=$(cat /var/run/sabnzbd/sabnzbd2.pid);
-            kill -0 $PID 2>/dev/null;
+        rm /etc/init.d/sabnzbd2 > /dev/null 2>&1
+    fi
 
-            if [ $? -eq 0 ]; then
-                kill -9 $PID;
-                #rm -Rf /var/run/sabnzbd/sabnzbd2.pid > /dev/null 2>&1
-            fi
+    if [ -f "/var/run/sabnzbd/sabnzbd2.pid" ]; then
+        PID=$(cat /var/run/sabnzbd/sabnzbd2.pid);
+        kill -0 $PID 2>/dev/null;
+
+        if [ $? -eq 0 ]; then
+            kill -9 $PID;
+            rm /var/run/sabnzbd/sabnzbd2.pid > /dev/null 2>&1
         fi
+    fi
 
-        find $OMV_SABNZBD2_DATA_PATH -mindepth 1 -delete
-        rm -Rf /etc/init.d/sabnzbd2
+    if [ -d $OMV_SABNZBD2_DATA_PATH ]; then
+        rm -Rf $OMV_SABNZBD2_DATA_PATH
+        rm /etc/init.d/sabnzbd2
     fi
 fi
 
@@ -305,8 +331,10 @@ EOF
     fi
     nginx -s reload
 else
-    echo "kjhhgkjhjkhkjhjkhkjhkjhkjhkjhj"
-    rm -Rf /etc/nginx/openmediavault-webgui.d/sab.conf > /dev/null 2>&1
+    if [ -f "/etc/nginx/openmediavault-webgui.d/sab.conf" ]; then
+        rm /etc/nginx/openmediavault-webgui.d/sab.conf > /dev/null 2>&1
+        nginx -s reload > /dev/null 2>&1
+    fi
     #if [ -f $OMV_SABNZBD1_DATA_CONFIG ]; then
     #    sed -i 's/^web_root.*/web_root = ""/' $OMV_SABNZBD1_DATA_CONFIG
     #fi
@@ -314,7 +342,6 @@ else
     #if [ -f $OMV_SABNZBD2_DATA_CONFIG ]; then
     #    sed -i 's/^web_root.*/web_root = ""/' $OMV_SABNZBD2_DATA_CONFIG
     #fi
-    nginx -s reload
 fi
 
 if [ "${newinstance}" = "1" ] && [ "${newinstenable}" = "1" ]; then
@@ -331,23 +358,24 @@ else
 
         if [ $? -eq 0 ]; then
             kill -9 $PID;
-            rm -Rf /var/run/sabnzbd/sabnzbd2.pid > /dev/null 2>&1
+            rm /var/run/sabnzbd/sabnzbd2.pid > /dev/null 2>&1
         fi
     fi
 fi
 
 if [ -f $CONFIG ]; then
-	HOST=`grep -m 1 host $CONFIG | cut -d ' ' -f 3`
-    if [ `grep -m 1 enable_https $CONFIG | cut -d ' ' -f 3` = "1" ]; then
-		PORT=`grep -m1 https_port $CONFIG | cut -d ' ' -f 3`
-	else
-		PORT=`grep -m2 port $CONFIG | tail -n1 | cut -d ' ' -f 3`
-	fi
+    HOST=`grep -m 1 host $CONFIG | cut -d ' ' -f 3`
+    HTTPS=`grep -m 1 ^enable_https "${CONFIG}" | cut -d ' ' -f 3`
+    if [ "$HTTPS" = "1" ]; then
+        PORT=`grep ^https_port $CONFIG | cut -d ' ' -f 3`
+    else
+        PORT=`grep -m 1 ^port $CONFIG | cut -d ' ' -f 3`
+    fi
 else
 	PORT="8080"
 fi
 
-xmlstarlet ed -L -u "//services/sabnzbd/port" -v $PORT -n ${OMV_CONFIG_FILE}
+xmlstarlet ed -L -u "//services/sabnzbd/port" -v $PORT -n $OMV_CONFIG_FILE
 }
 
 case "$2" in
@@ -361,7 +389,7 @@ case "$2" in
     setsettings
     ;;
   *)
-    exit 0
+    exit 1
 esac
 
 exit 0

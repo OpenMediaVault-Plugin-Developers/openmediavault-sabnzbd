@@ -83,6 +83,14 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
                 { name  : "newinstance", value : false }
             ],
             properties : "!show"
+        },{
+            name       : [
+                "showbutton",
+            ],
+            conditions : [
+                { name  : "enable", value : false }
+            ],
+            properties : "!show"
         }]
     }],
 
@@ -92,6 +100,7 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
         items.push({
             id: this.getId() + "-show",
             xtype: "button",
+            name: "showbutton",
             text: _("Open Web Client"),
             icon: "images/sabnzbd.png",
             iconCls: Ext.baseCSSPrefix + "btn-icon-16x16",
