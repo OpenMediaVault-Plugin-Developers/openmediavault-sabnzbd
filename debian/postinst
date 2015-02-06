@@ -42,15 +42,15 @@ case "$1" in
         fi
 
         STABLE=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
-    	
-        if [ ! -f /opt/SABnzbd/SABnzbd.py ]; then        
+
+        if [ ! -f /opt/SABnzbd/SABnzbd.py ]; then
             wget -q -nv http://downloads.sourceforge.net/project/sabnzbdplus/sabnzbdplus/${STABLE}/SABnzbd-${STABLE}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
             tar xzf /tmp/sabnzbdplus.tar.gz -C /tmp/
             cp -fRa /tmp/SABnzbd-${STABLE}/. /opt/SABnzbd/
             rm -fR /tmp/sabnzbdplus.tar.gz
             rm -fR /tmp/SABnzbd-${STABLE}
         fi
-	
+
         if ! omv_config_exists "${SERVICE_XPATH}"; then
             echo "Initial configuration."
             omv_config_add_element "/config/services" "${SERVICE_XPATH_NAME}"
@@ -63,12 +63,19 @@ case "$1" in
             omv_config_add_element "${SERVICE_XPATH}" "update" "0"
         fi
 
+        if omv_config_exists "${SERVICE_XPATH}/mntentref"; then
+            omv_config_delete "${SERVICE_XPATH}/mntentref"
+        fi
+
+        if omv_config_exists "${SERVICE_XPATH}/path"; then
+            omv_config_delete "${SERVICE_XPATH}/path"
+        fi
 
 
         chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GROUP $OMV_SABNZBD_APP_PATH
         chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GGOUP $OMV_SABNZBD1_DATA_PATH -R
         chmod 775 $OMV_SABNZBD_APP_PATH -R
-        
+
         # Activate package triggers. These triggers are only set during the
         # package installation.
         dpkg-trigger update-fixperms
