@@ -32,13 +32,17 @@ case "$1" in
         fi
 
         if [ -e $OMV_SABNZBD1_OLD_DATA_PATH ]; then
-            cp -Ra $OMV_SABNZBD1_OLD_DATA_PATH/* $OMV_SABNZBD1_DATA_PATH
-			rm -Rf OMV_SABNZBD1_OLD_DATA_PATH
+            if [ ! -e "${OMV_SABNZBD1_DATA_PATH}/sabnzbd.ini" ]; then
+                cp -Ra $OMV_SABNZBD1_OLD_DATA_PATH/* $OMV_SABNZBD1_DATA_PATH
+                #rm -Rf OMV_SABNZBD1_OLD_DATA_PATH
+            fi
         fi
 
         if [ -e $OMV_SABNZBD2_OLD_DATA_PATH ]; then
-            mv $OMV_SABNZBD2_OLD_DATA_PATH $OMV_SABNZBD2_DATA_PATH
-            chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GGOUP $OMV_SABNZBD2_DATA_PATH -R
+            if [ ! -e "${OMV_SABNZBD2_DATA_PATH}/sabnzbd.ini" ]; then
+                mv $OMV_SABNZBD2_OLD_DATA_PATH $OMV_SABNZBD2_DATA_PATH
+                chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GGOUP $OMV_SABNZBD2_DATA_PATH -R
+            fi
         fi
 
         STABLE=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`

@@ -189,8 +189,8 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
             },{
                 xtype      : "checkbox",
                 name       : "ssl",
-                fieldLabel : _("SSL"),
-                boxLabel   : _("Auto enable SSL."),
+                fieldLabel : _("HTTPS"),
+                boxLabel   : _("Auto enable HTTPS."),
                 checked    : false
             },{
                 xtype      : "checkbox",

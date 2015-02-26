@@ -167,7 +167,7 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
             if ($params["ppass"] == "1") {
                 throw new OMVException(
                     OMVErrorMsg::E_EXEC_MISC,
-                    "You can not enable both SSL and Proxy Pass."
+                    "You can not enable both HTTPS and Proxy Pass."
                 );
             }
             $xSsl = $xmlConfig->get("//webadmin/enablessl");
@@ -180,7 +180,7 @@ class OMVRpcServiceSabnzbd extends OMVRpcServiceAbstract
         }
 
         if ($params["showtab"] == true && $params["ppass"] != true) {
-            if (! file_exists("/var/www/openmediavault/js/omv/module/admin/service/media/Media.js'));
+            if (! file_exists('/var/www/openmediavault/js/omv/module/admin/service/media/Media.js')) {
                 throw new OMVException(
                     OMVErrorMsg::E_MISC_FAILURE,
                     "Install links and add an entry or enable Proxy Pass to use the web tab."
