@@ -1,3 +1,10 @@
+openmediavault-sabnzbd (1.0.7) unstable; urgency=low
+
+  * Fix proxy redirect
+  * Add wizard warnings
+
+ -- root <root@localhost.localdomain>  Thu, 06 Sep 2015 11:21:01 +0000
+
 openmediavault-sabnzbd (1.0.6) unstable; urgency=low
 
   * Allow 2nd instance

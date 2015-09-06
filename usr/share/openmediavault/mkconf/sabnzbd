@@ -312,10 +312,11 @@ else
 fi
 
 if [ "${ppass}" = "1" ]; then
+    IP=$(ifconfig|sed -n "/inet addr:.*255.255.255.*/{s/.*inet addr://; s/ .*//; p}")
     cat <<EOF > /etc/nginx/openmediavault-webgui.d/sab.conf
 location /sabnzbd {
         proxy_pass        http://localhost:8080/sabnzbd;
-        proxy_set_header  Host localhost:8080;
+        proxy_set_header  Host $IP;
         proxy_redirect    default;
 }
 
@@ -328,11 +329,11 @@ EOF
         #if [ -f $OMV_SABNZBD2_DATA_CONFIG ]; then
         #    sed -i 's/^web_root.*/web_root = "\/sabnzbd2"/' $OMV_SABNZBD2_DATA_CONFIG
         #fi
-
+        IP=$(ifconfig|sed -n "/inet addr:.*255.255.255.*/{s/.*inet addr://; s/ .*//; p}")
         cat <<EOF >> /etc/nginx/openmediavault-webgui.d/sab.conf
 location /sabnzbd2 {
         proxy_pass        http://localhost:8090/sabnzbd;
-        proxy_set_header  Host localhost:8090;
+        proxy_set_header  Host $IP;
         proxy_redirect    default;
 }
 

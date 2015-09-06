@@ -190,13 +190,13 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
                 xtype      : "checkbox",
                 name       : "ssl",
                 fieldLabel : _("HTTPS"),
-                boxLabel   : _("Auto enable HTTPS."),
+                boxLabel   : _("Auto enable HTTPS. Run wizard before enabling."),
                 checked    : false
             },{
                 xtype      : "checkbox",
                 name       : "ppass",
                 fieldLabel : _("Proxy Pass"),
-                boxLabel   : _("Enable this to access via OMV_IP/sabnzbd"),
+                boxLabel   : _("Enable this to access via OMV_IP/sabnzbd. Run wizard before enabling."),
                 checked    : false
             },{
                 xtype: "numberfield",

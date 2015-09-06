@@ -41,7 +41,7 @@ case "$1" in
         if [ -e $OMV_SABNZBD2_OLD_DATA_PATH ]; then
             if [ ! -e "${OMV_SABNZBD2_DATA_PATH}/sabnzbd.ini" ]; then
                 mv $OMV_SABNZBD2_OLD_DATA_PATH $OMV_SABNZBD2_DATA_PATH
-                chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GGOUP $OMV_SABNZBD2_DATA_PATH -R
+                chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GROUP $OMV_SABNZBD2_DATA_PATH -R
             fi
         fi
 
@@ -77,7 +77,7 @@ case "$1" in
 
 
         chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GROUP $OMV_SABNZBD_APP_PATH
-        chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GGOUP $OMV_SABNZBD1_DATA_PATH -R
+        chown $OMV_SABNZBD_USER:$OMV_SABNZBD_GROUP $OMV_SABNZBD1_DATA_PATH -R
         chmod 775 $OMV_SABNZBD_APP_PATH -R
 
         # Activate package triggers. These triggers are only set during the
