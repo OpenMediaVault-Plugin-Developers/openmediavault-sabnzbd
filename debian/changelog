@@ -1,3 +1,9 @@
+openmediavault-sabnzbd (3.0) unstable; urgency=low
+
+  * Update for OMV 3
+
+ -- root <root@localhost.localdomain>  Fri, 01 Jan 2016 14:41:01 +0000
+
 openmediavault-sabnzbd (1.0.7) unstable; urgency=low
 
   * Fix proxy redirect

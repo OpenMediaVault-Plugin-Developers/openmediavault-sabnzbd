@@ -34,9 +34,9 @@ ver2=`cat /opt/SABnzbd/sabnzbd/version.py | grep '__version__ = ' | sed 's/__ver
 
 #ver2=0.7.00 #use to test if button shows if values do not match
 if [ "$ver1" = "$ver2" ]; then
-    xmlstarlet ed -L -u "//services/sabnzbd/update" -v 0 -n $OMV_CONFIG_FILE
+    xmlstarlet ed -L -u "/config/services/sabnzbd/update" -v 0 $OMV_CONFIG_FILE
 else
-    xmlstarlet ed -L -u "//services/sabnzbd/update" -v 1 -n $OMV_CONFIG_FILE
+    xmlstarlet ed -L -u "/config/services/sabnzbd/update" -v 1 $OMV_CONFIG_FILE
 fi
 
 if [ -f "$CONFIG" ]; then
@@ -50,7 +50,7 @@ else
     PORT="8080"
 fi
 
-xmlstarlet ed -L -u "//services/sabnzbd/port" -v $PORT -n $OMV_CONFIG_FILE
+xmlstarlet ed -L -u "/config/services/sabnzbd/port" -v $PORT $OMV_CONFIG_FILE
 }
 
 setsettings() {
@@ -66,18 +66,18 @@ OMV_SABNZBD_USER=${USER-sabnzbd}
 OMV_SABNZBD_GROUP=${GROUP-users}
 OMV_SABNZBD_XPATH="/config/services/sabnzbd"
 
-newinstance="$(omv_config_get "//services/sabnzbd/newinstance")"
-newinstenable="$(omv_config_get "//services/sabnzbd/newinstenable")"
-ppass="$(omv_config_get "//services/sabnzbd/ppass")"
-ssl="$(omv_config_get "//services/sabnzbd/ssl")"
+newinstance="$(omv_config_get "/config/services/sabnzbd/newinstance")"
+newinstenable="$(omv_config_get "/config/services/sabnzbd/newinstenable")"
+ppass="$(omv_config_get "/config/services/sabnzbd/ppass")"
+ssl="$(omv_config_get "/config/services/sabnzbd/ssl")"
 ver1=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
 ver2=`cat /opt/SABnzbd/sabnzbd/version.py | grep '__version__ = ' | sed 's/__version__ = "\(.*\)"/\1/g'`
 
 #ver2=0.7.00 #use to test if button shows if values do not match
 if [ "$ver1" = "$ver2" ]; then
-    xmlstarlet ed -L -u "//services/sabnzbd/update" -v 0 -n $OMV_CONFIG_FILE
+    xmlstarlet ed -L -u "/config/services/sabnzbd/update" -v 0 $OMV_CONFIG_FILE
 else
-    xmlstarlet ed -L -u "//services/sabnzbd/update" -v 1 -n $OMV_CONFIG_FILE
+    xmlstarlet ed -L -u "/config/services/sabnzbd/update" -v 1 $OMV_CONFIG_FILE
 fi
 
 if [ ! -d $OMV_SABNZBD1_DATA_PATH ]; then
@@ -384,7 +384,7 @@ else
     PORT="8080"
 fi
 
-xmlstarlet ed -L -u "//services/sabnzbd/port" -v $PORT -n $OMV_CONFIG_FILE
+xmlstarlet ed -L -u "/config/services/sabnzbd/port" -v $PORT $OMV_CONFIG_FILE
 }
 
 case "$2" in

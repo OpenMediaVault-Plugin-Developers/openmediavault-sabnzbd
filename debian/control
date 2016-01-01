@@ -1,18 +1,27 @@
 Source: openmediavault-sabnzbd
 Section: net
-XB-Plugin-Section: downloaders
 Priority: optional
 Maintainer: OpenMediaVault Plugin Developers <plugins@omv-extras.org>
 Build-Depends: debhelper (>= 9 )
-Standards-Version: 3.9.3
+Standards-Version: 3.9.6
+XB-Plugin-Section: downloaders
 
 Package: openmediavault-sabnzbd
 Architecture: all
-Depends: ${misc:Depends}, openmediavault (>= 0.6), python, git,
- python-cheetah, python-configobj, python-feedparser,
- par2, python-openssl, python-yenc, unzip, python-support,
- unrar
-Description: OpenMediaVault SABnzbd plugin
+Depends: python,
+         openmediavault (>= 3.0),
+         git,
+         python-cheetah,
+         python-configobj,
+         python-feedparser,
+         par2,
+         python-openssl,
+         python-yenc,
+         unzip,
+         python-support,
+         unrar,         
+         ${misc:Depends}
+Description: SABnzbd plugin for OpenMediaVault.
  SABnzbd is a web-based binary newsgrabber written in Python, with support for
  the popular nzb file format. It greatly simplifies the process of downloading
  from usenet, thanks to a friendly web-based, fully customizable user interface

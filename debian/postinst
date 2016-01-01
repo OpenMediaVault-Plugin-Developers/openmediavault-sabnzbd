@@ -15,6 +15,13 @@ OMV_SABNZBD_GROUP="users"
 
 case "$1" in
     configure)
+        # Set the default settings of the service package to those expected by
+        # OpenMediaVault.
+        if [ -z "${2}" ]; then
+            systemctl stop sabnzbd.service
+            systemctl disable sabnzbd.service
+        fi
+
         SERVICE_XPATH_NAME="sabnzbd"
         SERVICE_XPATH="/config/services/${SERVICE_XPATH_NAME}"
 
@@ -94,5 +101,7 @@ case "$1" in
         exit 1
     ;;
 esac
+
+#DEBHELPER#
 
 exit 0
