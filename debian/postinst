@@ -45,10 +45,10 @@ case "$1" in
             fi
         fi
 
-        STABLE=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/README.*#\1#'`
+        STABLE=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
 
         if [ ! -f /opt/SABnzbd/SABnzbd.py ]; then
-            wget -q -nv http://downloads.sourceforge.net/project/sabnzbdplus/sabnzbdplus/${STABLE}/SABnzbd-${STABLE}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
+            wget -q -nv https://downloads.sourceforge.net/project/sabnzbdplus/sabnzbdplus/${STABLE}/SABnzbd-${STABLE}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
             tar xzf /tmp/sabnzbdplus.tar.gz -C /tmp/
             cp -fRa /tmp/SABnzbd-${STABLE}/. /opt/SABnzbd/
             rm -fR /tmp/sabnzbdplus.tar.gz

@@ -14,12 +14,12 @@ if [ -f "/etc/init.d/sabnzbd2" ]; then
     /etc/init.d/sabnzbd2 stop
 fi
 
-ver1=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
+ver1=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
 if [ "$ver1" = "" ]; then
     exit
 fi
 
-wget -q -nv http://downloads.sourceforge.net/project/sabnzbdplus/sabnzbdplus/${ver1}/SABnzbd-${ver1}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
+wget -q -nv https://downloads.sourceforge.net/project/sabnzbdplus/sabnzbdplus/${ver1}/SABnzbd-${ver1}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
 tar xzf /tmp/sabnzbdplus.tar.gz -C /tmp/
 cp -fRa /tmp/SABnzbd-${ver1}/. /opt/SABnzbd/
 rm -fR /tmp/sabnzbdplus.tar.gz
@@ -29,7 +29,7 @@ chmod 775 /opt/SABnzbd -R
 }
 
 getsettings() {
-ver1=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
+ver1=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
 ver2=`cat /opt/SABnzbd/sabnzbd/version.py | grep '__version__ = ' | sed 's/__version__ = "\(.*\)"/\1/g'`
 
 #ver2=0.7.00 #use to test if button shows if values do not match
@@ -70,7 +70,7 @@ newinstance="$(omv_config_get "//services/sabnzbd/newinstance")"
 newinstenable="$(omv_config_get "//services/sabnzbd/newinstenable")"
 ppass="$(omv_config_get "//services/sabnzbd/ppass")"
 ssl="$(omv_config_get "//services/sabnzbd/ssl")"
-ver1=`wget -q http://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus -O - | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
+ver1=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
 ver2=`cat /opt/SABnzbd/sabnzbd/version.py | grep '__version__ = ' | sed 's/__version__ = "\(.*\)"/\1/g'`
 
 #ver2=0.7.00 #use to test if button shows if values do not match

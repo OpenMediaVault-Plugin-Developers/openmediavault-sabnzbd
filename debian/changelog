@@ -1,3 +1,9 @@
+openmediavault-sabnzbd (1.0.9) unstable; urgency=low
+
+  * Use curl to get version info
+
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Fri, 15 Apr 2016 00:43:00 -0000
+
 openmediavault-sabnzbd (1.0.8) unstable; urgency=low
 
   * Fix link to download sabnzbd
