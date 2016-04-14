@@ -19,7 +19,8 @@ Depends: python,
          python-yenc,
          unzip,
          python-support,
-         unrar,         
+         unrar,
+         curl,
          ${misc:Depends}
 Description: SABnzbd plugin for OpenMediaVault.
  SABnzbd is a web-based binary newsgrabber written in Python, with support for
