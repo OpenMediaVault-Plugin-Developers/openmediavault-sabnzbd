@@ -63,7 +63,7 @@ class Sabnzbd extends ServiceAbstract implements
 
         return [
             'name' => $this->getName(),
-            'title' => gettext('Couchpotato'),
+            'title' => gettext('Sabnzbd'),
             'enabled' => $object->get('enable'),
             'running' => $systemCtl->isActive(),
         ];
