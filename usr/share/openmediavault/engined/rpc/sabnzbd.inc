@@ -102,6 +102,9 @@ class Sabnzbd extends ServiceAbstract
             }
         }
 
+        $object->add('port', 'integer');
+        $object->set('port', intval($port));
+
         return $object->getAssoc();
     }
 
