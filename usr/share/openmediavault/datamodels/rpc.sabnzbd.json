@@ -1,0 +1,41 @@
+[{
+	"type": "rpc",
+	"id": "rpc.sabnzbd.setsettings",
+	"params": {
+		"type": "object",
+		"properties": {
+			"enable": {
+			    "type": "boolean",
+				"required": true
+			},
+			"showtab": {
+			    "type": "boolean",
+				"required": true
+			},
+			"ssl": {
+			    "type": "boolean",
+				"required": true
+			},
+			"ppass": {
+			    "type": "boolean",
+				"required": true
+			},
+		    "newinstance": {
+			    "type": "boolean",
+				"required": true
+		    },
+			"newinstenable": {
+			    "type": "boolean",
+				"required": true
+            },
+			"update":{
+			    "type": "boolean",
+				"required": false
+			},
+		    "port": {
+			    "type": "integer",
+				"required": false
+		    }
+		}
+	}
+}]

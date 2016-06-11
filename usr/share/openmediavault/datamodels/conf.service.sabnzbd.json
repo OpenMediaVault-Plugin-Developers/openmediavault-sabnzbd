@@ -1,0 +1,45 @@
+{
+	"type": "config",
+	"id": "conf.service.sabnzbd",
+	"title": "Sabnzbd",
+	"queryinfo": {
+		"xpath": "/config/services/sabnzbd",
+		"iterable": false
+	},
+	"properties": {
+		"enable": {
+			"type": "boolean",
+			"default": false
+		},
+		"showtab": {
+			"type": "boolean",
+			"default": false
+		},
+		"ssl": {
+			"type": "boolean",
+			"default": false
+		},
+		"ppass": {
+			"type": "boolean",
+			"default": false
+		},
+		"newinstance": {
+			"type": "boolean",
+			"default": false
+		},
+		"newinstenable": {
+			"type": "boolean",
+			"default": false
+		},
+		"update": {
+			"type": "boolean",
+			"default": false
+		},
+		"port": {
+			"type": "integer",
+			"minimum": 1025,
+			"maximum": 65535,
+			"default": 8080
+		}
+	}
+}

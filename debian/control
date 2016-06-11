@@ -9,7 +9,7 @@ XB-Plugin-Section: downloaders
 Package: openmediavault-sabnzbd
 Architecture: all
 Depends: python,
-         openmediavault (= 3.0.13),
+         openmediavault (>= 3.0.13),
          git,
          python-cheetah,
          python-configobj,
@@ -19,7 +19,7 @@ Depends: python,
          python-yenc,
          unzip,
          python-support,
-         unrar,
+         unrar | unrar-free,
          curl,
          ${misc:Depends}
 Description: SABnzbd plugin for OpenMediaVault.
