@@ -18,7 +18,7 @@ ver1=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdp
 if [ "$ver1" = "" ]; then
     exit
 fi
-if [[ ${#ver1} > 10 ]]; then
+if [ ${#ver1} > 10 ]; then
     ver1=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/README.*#\1#'`
 fi
 
@@ -34,7 +34,7 @@ chmod 775 /opt/SABnzbd -R
 getsettings() {
 ver1=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
 
-if [[ ${#ver1} > 10 ]]; then
+if [ ${#ver1} > 10 ]; then
     ver1=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/README.*#\1#'`
 fi
 
@@ -80,7 +80,7 @@ ppass="$(omv_config_get "//services/sabnzbd/ppass")"
 ssl="$(omv_config_get "//services/sabnzbd/ssl")"
 ver1=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
 
-if [[ ${#ver1} > 10 ]]; then
+if [ ${#ver1} > 10 ]; then
     ver1=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/README.*#\1#'`
 fi
 ver2=`cat /opt/SABnzbd/sabnzbd/version.py | grep '__version__ = ' | sed 's/__version__ = "\(.*\)"/\1/g'`
