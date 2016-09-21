@@ -1,17 +1,15 @@
-<<<<<<< HEAD
-openmediavault-sabnzbd (3.1.1) unstable; urgency=low
+openmediavault-sabnzbd (3.2.1) unstable; urgency=low
 
   * Add par2-tbb to dependancy
   * Fix download/upgrade routine
 
  -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Wed, 21 Sep 2016 14:50:00 -0000
-=======
+
 openmediavault-sabnzbd (3.2) stable; urgency=low
 
   * OMV3.2 Version
 
  -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Sun, 03 Jul 2016 10:19:00 +0000
->>>>>>> origin/master
 
 openmediavault-sabnzbd (3.1) unstable; urgency=low
 
