@@ -54,7 +54,7 @@ case "$1" in
 
         STABLE=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
 
-        if [[ ${#STABLE} > 10 ]]; then
+        if [ ${#STABLE} -gt 10 ]; then
             STABLE=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/README.*#\1#'`
         fi
 
