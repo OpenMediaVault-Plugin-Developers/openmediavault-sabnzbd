@@ -1,3 +1,10 @@
+openmediavault-sabnzbd (1.0.10) unstable; urgency=low
+
+  * Add par2-tbb to dependancy
+  * Fix download/upgrade routine
+
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Wed, 21 Sep 2016 14:50:00 -0000
+
 openmediavault-sabnzbd (1.0.9) unstable; urgency=low
 
   * Use curl to get version info

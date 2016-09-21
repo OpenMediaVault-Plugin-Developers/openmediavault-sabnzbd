@@ -47,6 +47,10 @@ case "$1" in
 
         STABLE=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
 
+        if [[ ${#STABLE} > 10 ]]; then
+            STABLE=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/README.*#\1#'`
+        fi
+
         if [ ! -f /opt/SABnzbd/SABnzbd.py ]; then
             wget -q -nv https://downloads.sourceforge.net/project/sabnzbdplus/sabnzbdplus/${STABLE}/SABnzbd-${STABLE}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
             tar xzf /tmp/sabnzbdplus.tar.gz -C /tmp/
