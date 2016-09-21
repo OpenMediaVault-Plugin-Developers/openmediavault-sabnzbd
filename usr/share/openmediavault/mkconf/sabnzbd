@@ -18,6 +18,9 @@ ver1=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdp
 if [ "$ver1" = "" ]; then
     exit
 fi
+if [[ ${#ver1} > 10 ]]; then
+    ver1=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/README.*#\1#'`
+fi
 
 wget -q -nv https://downloads.sourceforge.net/project/sabnzbdplus/sabnzbdplus/${ver1}/SABnzbd-${ver1}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
 tar xzf /tmp/sabnzbdplus.tar.gz -C /tmp/
@@ -30,6 +33,11 @@ chmod 775 /opt/SABnzbd -R
 
 getsettings() {
 ver1=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
+
+if [[ ${#ver1} > 10 ]]; then
+    ver1=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/README.*#\1#'`
+fi
+
 ver2=`cat /opt/SABnzbd/sabnzbd/version.py | grep '__version__ = ' | sed 's/__version__ = "\(.*\)"/\1/g'`
 
 #ver2=0.7.00 #use to test if button shows if values do not match
@@ -71,6 +79,10 @@ newinstenable="$(omv_config_get "/config/services/sabnzbd/newinstenable")"
 ppass="$(omv_config_get "/config/services/sabnzbd/ppass")"
 ssl="$(omv_config_get "/config/services/sabnzbd/ssl")"
 ver1=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
+
+if [[ ${#ver1} > 10 ]]; then
+    ver1=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/README.*#\1#'`
+fi
 ver2=`cat /opt/SABnzbd/sabnzbd/version.py | grep '__version__ = ' | sed 's/__version__ = "\(.*\)"/\1/g'`
 
 #ver2=0.7.00 #use to test if button shows if values do not match
