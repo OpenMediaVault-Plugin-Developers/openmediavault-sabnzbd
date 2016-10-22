@@ -18,8 +18,8 @@ case "$1" in
         # Set the default settings of the service package to those expected by
         # OpenMediaVault.
         if [ -z "${2}" ]; then
-            systemctl stop sabnzbd.service
-            systemctl disable sabnzbd.service
+            systemctl stop sabnzbd.service >/dev/null || true
+            systemctl disable sabnzbd.service >/dev/null || true
         fi
 
         SERVICE_XPATH_NAME="sabnzbd"
