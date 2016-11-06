@@ -133,3 +133,14 @@ case "$1" in
 esac
 
 exit 0
+#[Unit]
+#Description = SABnzbd binary newsreader
+
+#[Service]
+#ExecStart = /bin/sh -c "python2 /opt/SABnzbd/SABnzbd.py -l0 -f /var/opt/sabnzbd/sabnzbd.ini -d --pid /tmp"
+#Type = forking
+#PIDFile = /tmp/sabnzbd.pid
+#User = sabnzbd
+#Group = users
+#[Install]
+#WantedBy = default.target

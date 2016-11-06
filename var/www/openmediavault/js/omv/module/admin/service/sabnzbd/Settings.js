@@ -182,6 +182,12 @@ Ext.define("OMV.module.admin.service.sabnzbd.Settings", {
                 checked    : false
             },{
                 xtype      : "checkbox",
+                name       : "beta",
+                fieldLabel : _("Beta Ver"),
+                boxLabel   : _("Allow updating to RC versions."),
+                checked    : false
+            },{
+                xtype      : "checkbox",
                 name       : "showtab",
                 fieldLabel : _("Show Tab"),
                 boxLabel   : _("Show tab containing SABnzbd web interface frame."),

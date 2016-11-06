@@ -12,6 +12,10 @@
 			    "type": "boolean",
 				"required": true
 			},
+			"beta": {
+			    "type": "boolean",
+				"required": true
+			},
 			"ssl": {
 			    "type": "boolean",
 				"required": true

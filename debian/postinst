@@ -52,14 +52,14 @@ case "$1" in
             fi
         fi
 
-        STABLE=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/SAB.*#\1#'`
+        STABLE=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
 
         if [ ${#STABLE} -gt 10 ]; then
-            STABLE=`curl -s -L https://sourceforge.net/projects/sabnzbdplus/rss?path=/sabnzbdplus | grep -m1 sabnzbdplus | sed 's#.*\/sabnzbdplus\/\(.*\)\/README.*#\1#'`
+            STABLE=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
         fi
 
         if [ ! -f /opt/SABnzbd/SABnzbd.py ]; then
-            wget -q -nv https://downloads.sourceforge.net/project/sabnzbdplus/sabnzbdplus/${STABLE}/SABnzbd-${STABLE}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
+            wget -q -nv https://github.com/sabnzbd/sabnzbd/releases/download/${STABLE}/SABnzbd-${STABLE}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
             tar xzf /tmp/sabnzbdplus.tar.gz -C /tmp/
             cp -fRa /tmp/SABnzbd-${STABLE}/. /opt/SABnzbd/
             rm -fR /tmp/sabnzbdplus.tar.gz
@@ -68,14 +68,14 @@ case "$1" in
 
         if ! omv_config_exists "${SERVICE_XPATH}"; then
             echo "Initial configuration."
-            omv_config_add_element "/config/services" "${SERVICE_XPATH_NAME}"
-            omv_config_add_element "${SERVICE_XPATH}" "enable" "0"
-            omv_config_add_element "${SERVICE_XPATH}" "newinstance" "0"
-            omv_config_add_element "${SERVICE_XPATH}" "newinstenable" "0"
-            omv_config_add_element "${SERVICE_XPATH}" "ssl" "0"
-            omv_config_add_element "${SERVICE_XPATH}" "ppass" "0"
-            omv_config_add_element "${SERVICE_XPATH}" "showtab" "0"
-            omv_config_add_element "${SERVICE_XPATH}" "update" "0"
+            omv_config_add_node "/config/services" "${SERVICE_XPATH_NAME}"
+            omv_config_add_node_data "${SERVICE_XPATH}" "enable" "0"
+            omv_config_add_node_data "${SERVICE_XPATH}" "newinstance" "0"
+            omv_config_add_node_data "${SERVICE_XPATH}" "newinstenable" "0"
+            omv_config_add_node_data "${SERVICE_XPATH}" "ssl" "0"
+            omv_config_add_node_data "${SERVICE_XPATH}" "ppass" "0"
+            omv_config_add_node_data "${SERVICE_XPATH}" "showtab" "0"
+            omv_config_add_node_data "${SERVICE_XPATH}" "update" "0"
         fi
 
         if omv_config_exists "${SERVICE_XPATH}/mntentref"; then
@@ -84,6 +84,10 @@ case "$1" in
 
         if omv_config_exists "${SERVICE_XPATH}/path"; then
             omv_config_delete "${SERVICE_XPATH}/path"
+        fi
+
+        if ! omv_config_exists "${SERVICE_XPATH}/beta"; then
+            omv_config_add_node_data "${SERVICE_XPATH}" "beta" "0"
         fi
 
 
