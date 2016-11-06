@@ -2,8 +2,9 @@ openmediavault-sabnzbd (3.2.2) unstable; urgency=low
 
   * Change to github for downloads
   * Fix install error
+  * Add option to use RC versions
 
- -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Sun, 06 Nov 2016 11:25:00 -0000
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Sun, 06 Nov 2016 13:48:00 -0000
 
 openmediavault-sabnzbd (3.2.1) unstable; urgency=low
 

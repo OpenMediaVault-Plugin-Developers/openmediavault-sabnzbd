@@ -74,7 +74,12 @@ class Sabnzbd extends ServiceAbstract
     {
         $this->validateMethodContext($context, ['role' => OMV_ROLE_ADMINISTRATOR]);
 
-        $cmd = 'omv-mkconf sabnzbd getsettings';
+        $cmd = new Process('omv-mkconf', 'sabnzbd', 'getsettings');
+        $cmd->setRedirect2to1();
+        $cmd->execute();
+
+        //$cmd = 'omv-mkconf sabnzbd getsettings';
+        //exec($cmd);
 
         $object = $this->database->get($this->dataModelPath);
 
@@ -304,11 +309,14 @@ class Sabnzbd extends ServiceAbstract
 
     public function doUpdateSAB($params, $context)
     {
-        $cmd = 'omv-mkconf sabnzbd update 2>&1';
-
-        if (0 !== $this->exec($cmd, $output)) {
-            throw new Exception($cmd, implode("\n", $output));
-        }
+        //$cmd = 'omv-mkconf sabnzbd update';
+        $cmd = new Process('omv-mkconf', 'sabnzbd', 'update');
+        $cmd->setRedirect2to1();
+        $cmd->execute();
+        //exec($cmd, $output);
+        //if (0 !== $this->exec($cmd, $output)) {
+        //    throw new \OMV\ExecException($cmdLine, $output);
+        //}
 
         // Send a modify signal so that the user can trigger a restart.
         $this->dispatcher->notify(OMV_NOTIFY_MODIFY, $this->eventMessagePath);

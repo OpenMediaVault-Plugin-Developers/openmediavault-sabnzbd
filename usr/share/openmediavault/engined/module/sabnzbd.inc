@@ -71,7 +71,7 @@ class Sabnzbd extends ServiceAbstract implements
 
     public function applyConfig()
     {
-        $cmd = new Process('omv-mkconf', $this->getName());
+        $cmd = new Process('omv-mkconf', $this->getName(), 'setsettings');
         $cmd->setRedirect2to1();
         $cmd->execute();
     }

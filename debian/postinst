@@ -59,7 +59,7 @@ case "$1" in
         fi
 
         if [ ! -f /opt/SABnzbd/SABnzbd.py ]; then
-            wget -q -nv https://github.com/sabnzbd/sabnzbd/releases/download/${STABLE}/SABnzbd-${STABLE}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
+            wget -q -nv https://github.com/sabnzbd/sabnzbd/releases/download/${STABLE}/SABnzbd-${STABLE}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz > /dev/null 2>&1
             tar xzf /tmp/sabnzbdplus.tar.gz -C /tmp/
             cp -fRa /tmp/SABnzbd-${STABLE}/. /opt/SABnzbd/
             rm -fR /tmp/sabnzbdplus.tar.gz

@@ -14,12 +14,20 @@ if [ -f "/etc/init.d/sabnzbd2" ]; then
     /etc/init.d/sabnzbd2 stop
 fi
 
-ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+
+beta="$(omv_config_get "/config/services/sabnzbd/beta")"
+
+if [ "${beta}" = "1" ]; then
+    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+else
+    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+fi
+
 if [ "$ver1" = "" ]; then
     exit
 fi
 
-wget -q -nv https://github.com/sabnzbd/sabnzbd/releases/download/${STABLE}/SABnzbd-${STABLE}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz
+wget -q -nv https://github.com/sabnzbd/sabnzbd/releases/download/${ver1}/SABnzbd-${ver1}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz > /dev/null 2>&1
 tar xzf /tmp/sabnzbdplus.tar.gz -C /tmp/
 cp -fRa /tmp/SABnzbd-${ver1}/. /opt/SABnzbd/
 rm -fR /tmp/sabnzbdplus.tar.gz
@@ -29,7 +37,13 @@ chmod 775 /opt/SABnzbd -R
 }
 
 getsettings() {
-ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+beta="$(omv_config_get "/config/services/sabnzbd/beta")"
+
+if [ "${beta}" = "1" ]; then
+    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+else
+    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+fi
 
 ver2=`cat /opt/SABnzbd/sabnzbd/version.py | grep '__version__ = ' | sed 's/__version__ = "\(.*\)"/\1/g'`
 
@@ -71,7 +85,14 @@ newinstance="$(omv_config_get "/config/services/sabnzbd/newinstance")"
 newinstenable="$(omv_config_get "/config/services/sabnzbd/newinstenable")"
 ppass="$(omv_config_get "/config/services/sabnzbd/ppass")"
 ssl="$(omv_config_get "/config/services/sabnzbd/ssl")"
-ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+
+beta="$(omv_config_get "/config/services/sabnzbd/beta")"
+
+if [ "${beta}" = "1" ]; then
+    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+else
+    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+fi
 
 ver2=`cat /opt/SABnzbd/sabnzbd/version.py | grep '__version__ = ' | sed 's/__version__ = "\(.*\)"/\1/g'`
 
@@ -389,7 +410,7 @@ fi
 xmlstarlet ed -L -u "/config/services/sabnzbd/port" -v $PORT $OMV_CONFIG_FILE
 }
 
-case "$2" in
+case "$1" in
   update)
     update
     ;;
@@ -404,3 +425,4 @@ case "$2" in
 esac
 
 exit 0
+
