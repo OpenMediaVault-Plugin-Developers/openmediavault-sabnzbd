@@ -1,3 +1,11 @@
+openmediavault-sabnzbd (1.0.11) unstable; urgency=low
+
+  * Change to github for downloads
+  * Fix install error
+  * Add option to use RC versions
+
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Sun, 20 Nov 2016 09:30:00 -0000
+
 openmediavault-sabnzbd (1.0.10) unstable; urgency=low
 
   * Add par2-tbb to dependancy
