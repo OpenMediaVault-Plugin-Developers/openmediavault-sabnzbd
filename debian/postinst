@@ -58,6 +58,10 @@ case "$1" in
             STABLE=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
         fi
 
+        if [ ${#STABLE} -gt 10 ]; then
+            STABLE=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 '\-src.tar.gz' | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+        fi
+
         if [ ! -f /opt/SABnzbd/SABnzbd.py ]; then
             wget -q -nv https://github.com/sabnzbd/sabnzbd/releases/download/${STABLE}/SABnzbd-${STABLE}-src.tar.gz -O /tmp/sabnzbdplus.tar.gz > /dev/null 2>&1
             tar xzf /tmp/sabnzbdplus.tar.gz -C /tmp/
