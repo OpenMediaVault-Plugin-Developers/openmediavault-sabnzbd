@@ -1,3 +1,9 @@
+openmediavault-sabnzbd (1.0.12) unstable; urgency=low
+
+  * Fix github link for downloads
+
+ -- OpenMediaVault Plugin Developers <plugins@omv-extras.org>  Sun, 15 Jan 2017 23:30:00 -0000
+
 openmediavault-sabnzbd (1.0.11) unstable; urgency=low
 
   * Change to github for downloads

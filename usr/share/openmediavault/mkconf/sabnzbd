@@ -15,12 +15,18 @@ if [ -f "/etc/init.d/sabnzbd2" ]; then
 fi
 
 
-beta="$(omv_config_get "//services/sabnzbd/beta")"
+beta="$(omv_config_get "/config/services/sabnzbd/beta")"
 
 if [ "${beta}" = "1" ]; then
-    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases | grep -m1 '\-src.tar.gz' | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    if [ ${#ver1} -gt 10 ]; then
+        ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    fi
 else
-    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 '\-src.tar.gz' | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    if [ ${#ver1} -gt 10 ]; then
+        ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    fi
 fi
 
 if [ "$ver1" = "" ]; then
@@ -40,9 +46,15 @@ getsettings() {
 beta="$(omv_config_get "//services/sabnzbd/beta")"
 
 if [ "${beta}" = "1" ]; then
-    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases | grep -m1 '\-src.tar.gz' | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    if [ ${#ver1} -gt 10 ]; then
+        ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    fi
 else
-    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 '\-src.tar.gz' | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    if [ ${#ver1} -gt 10 ]; then
+        ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    fi
 fi
 
 ver2=`cat /opt/SABnzbd/sabnzbd/version.py | grep '__version__ = ' | sed 's/__version__ = "\(.*\)"/\1/g'`
@@ -88,9 +100,15 @@ ssl="$(omv_config_get "//services/sabnzbd/ssl")"
 beta="$(omv_config_get "//services/sabnzbd/beta")"
 
 if [ "${beta}" = "1" ]; then
-    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases | grep -m1 '\-src.tar.gz' | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    if [ ${#ver1} -gt 10 ]; then
+        ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    fi
 else
-    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 '\-src.tar.gz' | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    if [ ${#ver1} -gt 10 ]; then
+        ver1=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+    fi
 fi
 
 ver2=`cat /opt/SABnzbd/sabnzbd/version.py | grep '__version__ = ' | sed 's/__version__ = "\(.*\)"/\1/g'`

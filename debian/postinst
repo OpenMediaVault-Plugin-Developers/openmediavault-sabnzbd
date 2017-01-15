@@ -45,7 +45,11 @@ case "$1" in
             fi
         fi
 
-        STABLE=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+        STABLE=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 '\-src.tar.gz' | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+
+        if [ ${#STABLE} -gt 10 ]; then
+            STABLE=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases/latest | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
+        fi
 
         if [ ${#STABLE} -gt 10 ]; then
             STABLE=`curl -s -L https://github.com/sabnzbd/sabnzbd/releases | grep -m1 SABnzbd- | sed 's#.*SABnzbd-\(.*\)-.*#\1#'`
